@@ -18,10 +18,15 @@ export const addItem = createAsyncThunk(
   async (newItem: EntryItem) => {
     try {
       const response = await model.addItem(newItem);
-      const data = response.data as EntryItem
-      return data
+      const { error, data } = response
+      if (error) {
+        console.log((error as any).message)
+        throw error
+      }
+      return data as EntryItem
     } catch (err: any) {
       console.log(err.message)
+      throw err
     }
   }
 )

@@ -19,11 +19,10 @@ class ListModel {
     async fetchAllItems() {
         try {
             const response: EntryItemResponse = await axios.get(`${this.api}`);
-            return response;
+            return { error: null, data: response.data };
         } catch (err) {
             console.log(err);
-            return { data: [] }
-            // throw err;
+            return { error: err, data: [] }
         }
     }
 
@@ -32,22 +31,20 @@ class ListModel {
             const response: { data: EntryItem } = await axios.post(`${this.api}`, {
                     payload: newItem
                 });
-            return response;
+            return { error: null, data: response.data };
         } catch (err) {
             console.log(err);
-            return { data: [] }
-            // throw err;
+            return { error: err, data: null }
         }
     }
 
     async deleteItem(entryID: string) {
         try {
             const response: { data: {id: string} } = await axios.delete(`${this.api}/${entryID}`);
-            return response;
+            return { error: null, data: response.data };
         } catch (err) {
             console.log(err);
-            return { data: [] }
-            // throw err;
+            return { error: err, data: "" }
         }
     }
 }

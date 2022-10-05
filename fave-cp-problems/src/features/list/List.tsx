@@ -31,6 +31,7 @@ function List() {
 
     try {
       dispatch(addItem(newEntry));
+      target.reset();
     } catch (err) {
       console.log(err);
     }
