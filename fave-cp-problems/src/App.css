@@ -1,0 +1,6 @@
+.App {
+    padding: 24px;
+    display: flex;
+    position: relative;
+    justify-content: center;
+}
