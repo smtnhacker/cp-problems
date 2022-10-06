@@ -14,15 +14,14 @@ const NavBar = () => {
                 CP Problem Index
             </div>
             <ul className={`nav nav-fill ${styles.nav}`}>
-                {
-                    loggedIn ? 
-                        <li className="nav-item">
-                            <Logout />
-                        </li>
-                        :
-                        <li className='nav-item'>
-                            <Login />
-                        </li>
+                {loggedIn ? 
+                    <li className="nav-item">
+                        <Logout />
+                    </li>
+                    :
+                    <li className='nav-item'>
+                        <Login />
+                    </li>
                 }
             </ul>
         </header>
