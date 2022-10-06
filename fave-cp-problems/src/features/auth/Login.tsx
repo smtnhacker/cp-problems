@@ -26,8 +26,8 @@ const Login = () => {
     }, [])
 
     const handleGoogleSuccess = (id: string) => {
-        const data: { email: string } = decodeJwtResponse(id);
-        const authorID = md5(data.email);
+        const data: { sub: string } = decodeJwtResponse(id);
+        const authorID = md5(data.sub);
         localStorage.setItem("nerd-id", authorID);
         dispatch(authLogin(authorID));
     }
