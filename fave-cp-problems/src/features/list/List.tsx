@@ -19,6 +19,8 @@ function List() {
 
     const target = e.target as any;
 
+    const tags = target.tags.value.split(",").map((tag: string) => tag.trim())
+
     const newEntry: EntryItem = {
       id: uuidv4(),
       authorID: authorID,
@@ -26,7 +28,7 @@ function List() {
       description: target.description.value,
       difficulty: target.difficulty.value,
       url: target.url.value,
-      tags: target.tags.value,
+      tags: tags || [],
     };
 
     try {
@@ -54,7 +56,7 @@ function List() {
       </ul>
       <div className="container">
         <form onSubmit={handleSubmit}>
-          <input type="text" name="authorID" value={authorID} hidden />
+          <input type="text" name="authorID" value={authorID} hidden readOnly />
           <div className="mb-3">
             <label className="form-label" htmlFor="title">
               Title
