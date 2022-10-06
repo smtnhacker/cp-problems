@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { EntryItem } from "../types/list";
-import { addItem, deleteItem, selectList, fetchItems } from "./listSlice";
+import { addItem, deleteItem, selectList, fetchItems, fetchUserItems } from "./listSlice";
+import { selectAuth } from "../auth/authSlice";
 
 import ListView from './ListView';
 import ListForm from "./LisrForm";
@@ -11,22 +12,29 @@ import ListForm from "./LisrForm";
 function List() {
   const list = useAppSelector(selectList);
   const dispatch = useAppDispatch();
-  const authorID = "1";
+  const auth = useAppSelector(selectAuth);
 
   useEffect(() => {
-    dispatch(fetchItems());
-  }, []);
+    if (auth.loggedIn) {
+      dispatch(fetchUserItems(auth.id));
+    } else {
+      dispatch(fetchItems());
+    }
+  }, [auth.loggedIn]);
 
   const handleSubmit = (e: SyntheticEvent): void => {
     e.preventDefault();
 
-    const target = e.target as any;
+    if (auth.id.length === 0) {
+      return alert("Please login first");
+    }
 
+    const target = e.target as any;
     const tags = target.tags.value.split(",").map((tag: string) => tag.trim())
 
     const newEntry: EntryItem = {
       id: uuidv4(),
-      authorID: authorID,
+      authorID: auth.id,
       title: target.title.value,
       description: target.description.value,
       difficulty: target.difficulty.value,
@@ -48,7 +56,7 @@ function List() {
         list={list} 
         onDelete={(id: string) => dispatch(deleteItem(id))}
       />
-      <ListForm onSubmit={handleSubmit} />
+      {auth.loggedIn && <ListForm onSubmit={handleSubmit} />}
     </div>
   );
 }

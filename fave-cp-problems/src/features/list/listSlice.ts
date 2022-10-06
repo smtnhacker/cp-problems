@@ -45,6 +45,20 @@ export const fetchItems = createAsyncThunk(
   }
 )
 
+export const fetchUserItems = createAsyncThunk(
+  'list/fetchUserItems',
+  async (authorID: string) => {
+    try {
+      const response = await model.fetchUserItems(authorID);
+      const data = processData(response.data)
+      console.log(data);
+      return data
+    } catch (err: any) {
+      console.log(err.message);
+    }
+  }
+)
+
 export const deleteItem = createAsyncThunk(
   'list/deleteItem',
   async (id: string) => {
@@ -107,6 +121,21 @@ export const listSlice = createSlice({
         state.value = state.value.filter(entry => entry.id !== action.payload)
       })
       .addCase(deleteItem.rejected, (state) => {
+        state.status = 'failed'
+      })
+      .addCase(fetchUserItems.pending, (state) => {
+        state.status = 'loading'
+      })
+      .addCase(fetchUserItems.fulfilled, (state, action) => {
+        if (action.payload === undefined) {
+          throw new Error("Action payload is undefined");
+        }
+        else {
+          state.status = 'idle';
+          state.value = [...action.payload];
+        }
+      })
+      .addCase(fetchUserItems.rejected, (state) => {
         state.status = 'failed'
       })
   }

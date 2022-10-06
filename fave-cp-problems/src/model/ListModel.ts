@@ -23,9 +23,15 @@ class ListModel {
         if (HAS_FIREBASE) {
             try {
                 const listRef = ref(db);
-                const data = (await get(child(listRef, 'list'))).val() ?? {};
+                const data = (await get(child(listRef, 'user'))).val() ?? {};
+                const flattenedData: { [key: string]: EntryItem } = {}
+                Object.keys(data).forEach(authorID => {
+                    Object.keys(data[authorID]).forEach(id => {
+                        flattenedData[id] = data[authorID][id];
+                    })
+                })
                 console.dir({ action: "fetchAll", data: data });    
-                return { error: null, data: data };
+                return { error: null, data: flattenedData };
             } catch (err) {
                 return { error: err, data: {} }
             }
@@ -43,10 +49,34 @@ class ListModel {
 
     }
 
+    async fetchUserItems(authorID: string) {
+
+        if (HAS_FIREBASE) {
+            try {
+                const listRef = ref(db);
+                const data = (await get(child(listRef, `user/${authorID}`))).val() ?? {};
+                const flattenedData: { [key: string]: EntryItem } = {}
+                Object.keys(data).forEach(id => {
+                    flattenedData[id] = data[id];
+                })
+                console.dir({ action: "fetchUserAll", id: authorID, data: data });    
+                return { error: null, data: data };
+            } catch (err) {
+                return { error: err, data: {} }
+            }
+        }
+
+        else {
+            return { error: "no firebase", data: { } }
+        }
+
+    }
+
     async addItem(newItem: EntryItem) {
 
         if (HAS_FIREBASE) {
-            const listRef = ref(db, 'list/' + newItem.id); 
+            const { authorID, id } = newItem;
+            const listRef = ref(db, `user/${authorID}/${id}`); 
             set(listRef, newItem);
             return { error: null, data: newItem }
         }
