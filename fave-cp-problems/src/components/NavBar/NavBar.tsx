@@ -9,7 +9,7 @@ const NavBar = () => {
     const { loggedIn } = useAppSelector(selectAuth);
 
     return (
-        <header className={styles.header}>
+        <header className={`navbar bg-light ${styles.header}`}>
             <div className="logo">
                 CP Problem Index
             </div>

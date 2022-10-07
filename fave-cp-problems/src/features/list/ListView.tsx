@@ -7,13 +7,12 @@ interface ListViewProps {
 
 const ListView = (props: ListViewProps) => {
   return (
-    <ul className="list-group">
+    <ul className="list-group" style={{ margin: "12px" }}>
       {props.list.map((entry: EntryItem) => (
         <li key={entry.id} className="list-group-item">
-          <button className="btn" onClick={() => props.onDelete(entry.id)}>
-            X
+          <button className="btn-close" onClick={() => props.onDelete(entry.id)}>
           </button>
-          {entry.title}
+          <span>{entry.title}</span>
         </li>
       ))}
     </ul>
