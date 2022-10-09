@@ -8,10 +8,15 @@ const db = new JSONdb(path.join('mock_db.json'))
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use(express.static(path.join(__dirname, "public")))
 
 app.use(cors({
     origin: 'http://localhost:3000'
 }))
+
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"))
+})
 
 app.get('/list', (req, res) => {
     const data = db.get('list');
