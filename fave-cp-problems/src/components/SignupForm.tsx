@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom';
 
 interface SignupFormProps {
     onSubmit: Function
@@ -44,6 +45,7 @@ const SignupForm = (props: SignupFormProps) => {
                     </div>
                     <input type="submit" value="Submit" className="btn btn-primary" />
                 </form>
+                <Link className="nav-link" style={{ paddingTop: "24px" }} to="/login">I already have an account</Link>
             </div>
         </div>
     )

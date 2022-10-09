@@ -1,13 +1,17 @@
+import { Link } from 'react-router-dom';
 import { useState } from 'react'
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+
 import GoogleLoginBtn from "../features/auth/GoogleLoginBtn"
 import Separator from "../components/Separator/Separator"
+import { useNavigate } from 'react-router';
 
 interface LoginFormProps {
     onSuccess: Function
 }
 
 const LoginForm = (props: LoginFormProps) => {
+    const navigate = useNavigate()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
 
@@ -62,6 +66,7 @@ const LoginForm = (props: LoginFormProps) => {
                     </div>
                     <input type="submit" value="Submit" className="btn btn-primary" />
                 </form>
+                <Link className="nav-link" style={{ paddingTop: "24px" }} to="/signup">I'm new here</Link>
             </div>
         </div>
     )
