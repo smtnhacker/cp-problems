@@ -15,18 +15,20 @@ const LoginPage = (props: LoginPageProps) => {
     const dispatch = useAppDispatch()
     const auth = useAppSelector(selectAuth)
 
-    useEffect(() => {
-        if (auth.id) {
-            googleLogout();
-        }
-    }, [])
-
     const handleLogin = (authorID: string) => {
         localStorage.setItem("nerd-id", authorID);
         dispatch(authLogin(authorID));
         console.log("Logged in as", authorID)
         navigate(props.successRedirect)
         console.log("navigated to", props.successRedirect)
+    }
+
+    if (!!auth.loggedIn) {
+        return (
+            <div>
+                You are already logged in
+            </div>
+        )
     }
 
     return (

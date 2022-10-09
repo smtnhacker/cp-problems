@@ -1,20 +1,36 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Routes, Route } from "react-router"
 import { BrowserRouter } from "react-router-dom"
 import App from "./App"
-import { useAppSelector } from "./app/hooks"
+import { useAppDispatch, useAppSelector } from "./app/hooks"
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute"
-import { selectAuth } from "./features/auth/authSlice"
+import { authLogin, selectAuth } from "./features/auth/authSlice"
 import List from "./features/list/List"
 import LoginPage from "./routes/LoginPage"
+import SignupPage from "./routes/SignupPage"
 
 const LOGIN_PATH = "/login"
 
 const RouteWrapper = () => {
-  const auth = useAppSelector(selectAuth);
+  const [loading, setLoading] = useState(true)
+  const dispatch = useAppDispatch()
 
-  const isAuthenticated = () => {
-    return !!auth.loggedIn;
+  const getAuthentication = () => {
+    const authorID = localStorage.getItem("nerd-id");
+    if (authorID) {
+      dispatch(authLogin(authorID))
+      return true
+    }
+    return false
+  }
+
+  useEffect(() => {
+    getAuthentication();
+    setLoading(false)
+  }, [])
+
+  if (loading) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -25,9 +41,13 @@ const RouteWrapper = () => {
             path="/login"
             element={<LoginPage successRedirect="/problems" />}
           />
+          <Route 
+            path="/signup"
+            element={<SignupPage redirect="/login" />}
+          />
           <Route
             element={
-              <ProtectedRoute redirectPath={LOGIN_PATH} isAllowed={isAuthenticated()} />
+              <ProtectedRoute redirectPath={LOGIN_PATH} getAuthentication={getAuthentication} />
             }
           >
             <Route path="/problems" element={<List />} />
