@@ -1,8 +1,10 @@
+import { googleLogout } from "@react-oauth/google";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useAppDispatch } from "../app/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 
 import LoginForm from "../components/LoginForm";
-import { authLogin } from "../features/auth/authSlice";
+import { authLogin, selectAuth } from "../features/auth/authSlice";
 
 interface LoginPageProps {
     successRedirect: string
@@ -11,6 +13,13 @@ interface LoginPageProps {
 const LoginPage = (props: LoginPageProps) => {
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
+    const auth = useAppSelector(selectAuth)
+
+    useEffect(() => {
+        if (auth.id) {
+            googleLogout();
+        }
+    }, [])
 
     const handleLogin = (authorID: string) => {
         localStorage.setItem("nerd-id", authorID);
