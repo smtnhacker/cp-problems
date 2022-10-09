@@ -10,9 +10,17 @@ const ListView = (props: ListViewProps) => {
     <ul className="list-group" style={{ margin: "12px" }}>
       {props.list.map((entry: EntryItem) => (
         <li key={entry.id} className="list-group-item">
-          <button className="btn-close" onClick={() => props.onDelete(entry.id)}>
-          </button>
-          <span>{entry.title}</span>
+          <div className="row">
+            <div className="col-auto">
+              <button className="btn-close" onClick={() => props.onDelete(entry.id)}>
+              </button>
+            </div>
+            <div className="col">
+              <a className="nav-link" href={entry.url}>
+                <span>{entry.title}</span> <span className="text-muted">({entry.difficulty})</span>
+              </a>
+            </div>
+          </div>
         </li>
       ))}
     </ul>

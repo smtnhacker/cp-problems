@@ -1,7 +1,7 @@
 import styles from "./Separator.module.css"
 
 interface SeparatorProps {
-    text: string
+    text?: string
 }
 
 const Separator = (props: SeparatorProps) => {

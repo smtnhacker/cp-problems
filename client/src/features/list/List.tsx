@@ -8,6 +8,7 @@ import { selectAuth } from "../auth/authSlice";
 
 import ListView from './ListView';
 import ListForm from "./LisrForm";
+import Separator from "../../components/Separator/Separator";
 
 function List() {
   const list = useAppSelector(selectList);
@@ -52,11 +53,13 @@ function List() {
 
   return (
     <div className="container">
+      {auth.loggedIn && <ListForm onSubmit={handleSubmit} />}
+      <Separator />
+      <h2>My Problem List</h2>
       <ListView 
         list={list} 
         onDelete={(id: string) => dispatch(deleteItem(id))}
       />
-      {auth.loggedIn && <ListForm onSubmit={handleSubmit} />}
     </div>
   );
 }

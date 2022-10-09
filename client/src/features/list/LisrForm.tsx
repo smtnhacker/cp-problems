@@ -5,7 +5,7 @@ interface ListFormProps {
 }
 
 const ListForm = (props: ListFormProps) => {
-  const [dif, setDif] = useState<number>(0);
+  const [dif, setDif] = useState<number>(800);
 
   const authorID = "1";
 
@@ -37,6 +37,7 @@ const ListForm = (props: ListFormProps) => {
             onChange={e => setDif(parseInt(e.target.value))}
             min={0}
             max={3500}
+            step={100}
           />
         </div>
         <div className="mb-3 input-group">
