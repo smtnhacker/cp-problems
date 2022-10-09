@@ -5,6 +5,10 @@ import { useEffect } from "react";
 import { useAppDispatch } from '../../app/hooks';
 import { authLogin } from "./authSlice";
 
+interface GoogleLoginBtnProps {
+    onSuccess?: Function
+}
+
 // https://stackoverflow.com/questions/71686512/gsi-logger-the-value-of-callback-is-not-a-function-configuration-ignored
 function decodeJwtResponse(token: string) {
     let base64Url = token.split('.')[1]
@@ -15,21 +19,14 @@ function decodeJwtResponse(token: string) {
     return JSON.parse(jsonPayload)
 }
 
-const Login = () => {
-    const dispatch = useAppDispatch()
-
-    useEffect(() => {
-        const authorID = localStorage.getItem("nerd-id");
-        if (authorID) {
-            dispatch(authLogin(authorID));
-        }
-    }, [])
+const GoogleLoginBtn = (props: GoogleLoginBtnProps) => {
 
     const handleGoogleSuccess = (id: string) => {
         const data: { sub: string } = decodeJwtResponse(id);
-        const authorID = md5(data.sub);
-        localStorage.setItem("nerd-id", authorID);
-        dispatch(authLogin(authorID));
+        const authorID = md5(data.sub);    
+        if (props.onSuccess) {
+            props.onSuccess(authorID)
+        }
     }
 
     return (
@@ -40,4 +37,4 @@ const Login = () => {
     );
 };
 
-export default Login
+export default GoogleLoginBtn

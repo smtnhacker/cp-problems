@@ -1,5 +1,4 @@
 import React from 'react';
-import axios from 'axios';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from './app/store';
@@ -7,9 +6,10 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 
 import { GOOGLE_OAUTH_CLIENT_ID } from './config';
 
-import App from './App';
 import reportWebVitals from './reportWebVitals';
 import './index.css';
+
+import RouteWrapper from './RouteWrapper';
 
 const container = document.getElementById('root')!;
 const root = createRoot(container);
@@ -20,7 +20,7 @@ root.render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_OAUTH_CLIENT_ID}>
       <Provider store={store}>
-        <App />
+        <RouteWrapper />
       </Provider>
     </GoogleOAuthProvider>
   </React.StrictMode>

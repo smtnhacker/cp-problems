@@ -3,7 +3,7 @@ import { googleLogout } from '@react-oauth/google'
 import { useAppDispatch } from '../../app/hooks';
 import { authLogout } from './authSlice';
 
-const Logout = () => {
+const LogoutBtn = () => {
     const dispatch = useAppDispatch()
 
     const handleLogout = () => {
@@ -19,4 +19,4 @@ const Logout = () => {
     );
 }
 
-export default Logout
+export default LogoutBtn
