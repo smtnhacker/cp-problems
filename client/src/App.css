@@ -3,4 +3,5 @@
     display: flex;
     position: relative;
     justify-content: center;
+    min-height: 580px;
 }

@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute"
 import { authLogin, selectAuth } from "./features/auth/authSlice"
 import List from "./features/list/List"
 import DashboardPage from "./routes/DashboardPage"
+import LandingPage from "./routes/LandingPage"
 import LoginPage from "./routes/LoginPage"
 import SignupPage from "./routes/SignupPage"
 
@@ -38,6 +39,7 @@ const RouteWrapper = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}>
+          <Route index element={<LandingPage />} />
           <Route
             path="/login"
             element={<LoginPage successRedirect="/problems" />}
