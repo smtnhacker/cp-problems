@@ -11,6 +11,10 @@ interface EntryItemResponse {
     }
 }
 
+interface RawEntryItem extends Omit<EntryItem, 'difficulty'> {
+    difficulty: string
+}
+
 class ListModel {
     private api: string;
 
@@ -24,13 +28,15 @@ class ListModel {
             try {
                 const listRef = ref(db);
                 const data = (await get(child(listRef, 'user'))).val() ?? {};
-                const flattenedData: { [key: string]: EntryItem } = {}
+                const flattenedData: { [key: string]: RawEntryItem } = {}
                 Object.keys(data).forEach(authorID => {
                     Object.keys(data[authorID]).forEach(id => {
-                        flattenedData[id] = data[authorID][id];
+                        const temp: any = data[authorID][id];
+                        temp.difficulty = parseInt(temp.difficulty)
+                        flattenedData[id] = temp;
                     })
                 })
-                console.dir({ action: "fetchAll", data: data });    
+                console.dir({ action: "fetchAll", data: flattenedData });    
                 return { error: null, data: flattenedData };
             } catch (err) {
                 return { error: err, data: {} }
@@ -57,10 +63,10 @@ class ListModel {
                 const data = (await get(child(listRef, `user/${authorID}`))).val() ?? {};
                 const flattenedData: { [key: string]: EntryItem } = {}
                 Object.keys(data).forEach(id => {
-                    flattenedData[id] = data[id];
+                    flattenedData[id] = { ...data[id], difficulty: parseInt(data[id].difficulty) };
                 })
-                console.dir({ action: "fetchUserAll", id: authorID, data: data });    
-                return { error: null, data: data };
+                console.dir({ action: "fetchUserAll", id: authorID, data: flattenedData });    
+                return { error: null, data: flattenedData };
             } catch (err) {
                 return { error: err, data: {} }
             }

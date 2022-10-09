@@ -10,8 +10,20 @@ const NavBar = () => {
 
     return (
         <header className={`navbar bg-light ${styles.header}`}>
-            <div className="logo">
-                <Link className="navbar-brand" to="/">CP Problems</Link>
+            <div className="logo row">
+                <div className="col">
+                    <Link className="navbar-brand" to="/">CP Problems</Link>
+                </div>
+                {loggedIn && 
+                    <ul className="nav col-auto">
+                        <li className="nav-item">
+                            <Link className='nav-link' to="/dashboard">Dashboard</Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/problems">Problems</Link>
+                        </li>
+                    </ul>
+                }
             </div>
             <ul className={`nav nav-fill ${styles.nav}`}>
                 {loggedIn ? 

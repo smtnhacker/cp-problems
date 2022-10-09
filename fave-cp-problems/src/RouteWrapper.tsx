@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "./app/hooks"
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute"
 import { authLogin, selectAuth } from "./features/auth/authSlice"
 import List from "./features/list/List"
+import DashboardPage from "./routes/DashboardPage"
 import LoginPage from "./routes/LoginPage"
 import SignupPage from "./routes/SignupPage"
 
@@ -50,6 +51,7 @@ const RouteWrapper = () => {
               <ProtectedRoute redirectPath={LOGIN_PATH} getAuthentication={getAuthentication} />
             }
           >
+            <Route path="/dashboard" element={<DashboardPage />}></Route>
             <Route path="/problems" element={<List />} />
           </Route>
           <Route path="*" element={<h1>Error 404!</h1>} />
