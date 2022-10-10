@@ -5,6 +5,8 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { EntryItem } from "../types/list";
 import { addItem, deleteItem, selectList, fetchItems, fetchUserItems } from "./listSlice";
 import { selectAuth } from "../auth/authSlice";
+import getBestTag from "../../util/getBestTag";
+import removeDuplicates from "../../util/removeDuplicates";
 
 import ListView from './ListView';
 import ListForm from "./LisrForm";
@@ -31,7 +33,11 @@ function List() {
     }
 
     const target = e.target as any;
-    const tags = target.tags.value.split(",").map((tag: string) => tag.trim())
+    const tags = removeDuplicates (
+                  target.tags.value.split(",")
+                  .map((tag: string) => tag.trim())
+                  .map((tag: string) => getBestTag(tag))
+                )
 
     const newEntry: EntryItem = {
       id: uuidv4(),
