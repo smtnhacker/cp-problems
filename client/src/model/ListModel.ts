@@ -98,10 +98,10 @@ class ListModel {
         }
     }
 
-    async deleteItem(entryID: string) {
+    async deleteItem(authorID: string, entryID: string) {
 
         if (HAS_FIREBASE) {
-            const itemRef = ref(db, `list/${entryID}`)
+            const itemRef = ref(db, `user/${authorID}/${entryID}`)
             try {
                 await remove(itemRef);
                 return { error: null, data: { id: entryID }}

@@ -61,9 +61,9 @@ export const fetchUserItems = createAsyncThunk(
 
 export const deleteItem = createAsyncThunk(
   'list/deleteItem',
-  async (id: string) => {
+  async (payload: { authorID: string, id: string }) => {
     try {
-      const response = await model.deleteItem(id);
+      const response = await model.deleteItem(payload.authorID, payload.id);
       const data = (response.data as any).id;
       return data;
     } catch (err: any) {
@@ -106,7 +106,7 @@ export const listSlice = createSlice({
           throw new Error("Action payload is undefined");
         }
         else {
-          state.status = 'idle';
+          state.status = 'idle';  
           state.value = [...action.payload];
         }
       })

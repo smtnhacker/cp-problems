@@ -64,7 +64,7 @@ function List() {
       <h2>My Problem List</h2>
       <ListView 
         list={list} 
-        onDelete={(id: string) => dispatch(deleteItem(id))}
+        onDelete={(id: string) => dispatch(deleteItem({ id: id, authorID: auth.id }))}
       />
     </div>
   );
