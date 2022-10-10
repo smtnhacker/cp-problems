@@ -3,10 +3,12 @@ import { Routes, Route } from "react-router"
 import { BrowserRouter } from "react-router-dom"
 import App from "./App"
 import { useAppDispatch, useAppSelector } from "./app/hooks"
+import ProblemView from "./components/Problem/ProblemView"
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute"
 import { authLogin, selectAuth } from "./features/auth/authSlice"
 import List from "./features/list/List"
 import DashboardPage from "./routes/DashboardPage"
+import EditPage from "./routes/EditPage"
 import LandingPage from "./routes/LandingPage"
 import LoginPage from "./routes/LoginPage"
 import SignupPage from "./routes/SignupPage"
@@ -54,7 +56,10 @@ const RouteWrapper = () => {
             }
           >
             <Route path="/dashboard" element={<DashboardPage />}></Route>
-            <Route path="/problems" element={<List />} />
+            <Route path="/problems" element={<EditPage />}>
+              <Route index element={<List />} />
+              <Route path=":problemID" element={<ProblemView />} />
+            </Route>
           </Route>
           <Route path="*" element={<h1>Error 404!</h1>} />
         </Route>

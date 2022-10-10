@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { EntryItem } from "../types/list";
 
 interface ListViewProps {
@@ -16,9 +17,9 @@ const ListView = (props: ListViewProps) => {
               </button>
             </div>
             <div className="col">
-              <a className="nav-link" href={entry.url}>
+              <Link className="nav-link" to={`/problems/${entry.id || "404"}`}>
                 <span>{entry.title}</span> <span className="text-muted">({entry.difficulty})</span>
-              </a>
+              </Link>
             </div>
           </div>
         </li>
