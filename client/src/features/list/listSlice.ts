@@ -31,6 +31,24 @@ export const addItem = createAsyncThunk(
   }
 )
 
+export const updateItem = createAsyncThunk(
+  'list/updateItem',
+  async (updatedItem: EntryItem) => {
+    try {
+      const response = await model.addItem(updatedItem);
+      const { error, data } = response
+      if (error) {
+        console.log((error as any).message)
+        throw error
+      }
+      return data as EntryItem
+    } catch (err: any) {
+      console.log(err.message)
+      throw err
+    }
+  }
+)
+
 export const fetchItems = createAsyncThunk(
   'list/fetchItems',
   async () => {
@@ -96,6 +114,27 @@ export const listSlice = createSlice({
         }
       })
       .addCase(addItem.rejected, (state) => {
+        state.status = 'failed';
+      })
+      .addCase(updateItem.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(updateItem.fulfilled, (state, action) => {
+        if (action.payload === undefined) {
+          throw new Error("Action payload is undefined");
+        }
+        else {
+          state.status = 'idle';
+          state.value = state.value.map((entry: EntryItem) => {
+            if (entry.id === action.payload.id) {
+              return action.payload
+            } else {
+              return entry
+            }
+          });
+        }
+      })
+      .addCase(updateItem.rejected, (state) => {
         state.status = 'failed';
       })
       .addCase(fetchItems.pending, (state) => {

@@ -1,24 +1,72 @@
-import { useState } from "react";
-import RichBodyEditor from "../RichBodyEditor/RichBodyEditor";
+import { useEffect, useState, useMemo } from "react";
+import RichBodyEditor from "../RichBody/RichBodyEditor/RichBodyEditor";
 import { EntryItem } from "../../features/types/list"
-import Separator from "../Separator/Separator";
+import removeDuplicates from "../../util/removeDuplicates";
+import getBestTag from "../../util/getBestTag";
 
 interface ProblemFormProps {
     entry: EntryItem,
     authorID: string,
-    onSubmit: React.FormEventHandler<HTMLFormElement>
+    onSubmit: Function
 }
 
 const ProblemForm = (props: ProblemFormProps) => {
     const [dif, setDif] = useState<number>(props.entry.difficulty);
     const [title, setTitle] = useState(props.entry.title)
-    const [description, setDescription] = useState(props.entry.description)
+    const [description, setDescription] = useState("")
     const [url, setUrl] = useState(props.entry.url)
     const [tags, setTags] = useState(props.entry.tags.reduce((total, cur) => total ? total + ", " + cur : cur, ""))
 
+    const initialDescription: any[] | null = useMemo(() => {
+      try {
+        const descCache = JSON.parse(localStorage.getItem('problem-cache-content'))
+        if (descCache.id === props.entry.id) {
+          console.log("Found cache", descCache.content)
+          setDescription(descCache.content)
+          return JSON.parse(descCache.content)
+        } else {
+          setDescription(props.entry.description)
+          return props.entry.description
+        }
+      } catch (err) {
+        setDescription(props.entry.description)
+        return props.entry.description
+      }
+    }, [])
+
+    const handleDescriptionChange = (newContent: string) => {
+      const descCache = JSON.stringify({ id: props.entry.id, content: newContent });
+      setDescription(newContent)
+      localStorage.setItem('problem-cache-content', descCache)
+    }
+
+    const handleSubmit = (e) => {
+      e.preventDefault()
+
+      const newTags = removeDuplicates (
+        tags.split(",")
+        .map((tag: string) => tag.trim())
+        .map((tag: string) => getBestTag(tag))
+      )
+
+      const newEntry: EntryItem = {
+        id: props.entry.id,
+        authorID: props.authorID,
+        title: title,
+        description: description,
+        difficulty: dif,
+        url: url,
+        tags: newTags,
+      };
+
+      console.log(newEntry)
+
+      props.onSubmit(newEntry)
+    }
+
     return (
       <>
-        <form onSubmit={props.onSubmit}>
+        <form onSubmit={handleSubmit}>
           <input type="text" name="authorID" value={props.authorID} hidden readOnly />
           <div className="mb-3 input-group">
             <label className="input-group-text" htmlFor="title">
@@ -57,7 +105,7 @@ const ProblemForm = (props: ProblemFormProps) => {
             <label className="input-group-text" hidden htmlFor="description">
               Description
             </label>
-            <RichBodyEditor />
+            <RichBodyEditor initialValue={initialDescription} onChange={handleDescriptionChange} />
           </div>
           <input className="btn btn-primary" type="submit" value="Update" />
         </form>

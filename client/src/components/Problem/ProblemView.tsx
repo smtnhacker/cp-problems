@@ -1,14 +1,15 @@
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams } from "react-router"
 import { IoPencilSharp } from "react-icons/io5"
 
-import { useAppSelector } from "../../app/hooks"
-import { selectList } from "../../features/list/listSlice"
+import { useAppDispatch, useAppSelector } from "../../app/hooks"
+import { selectList, updateItem } from "../../features/list/listSlice"
 import { selectAuth } from "../../features/auth/authSlice"
 import ProblemForm from "./ProblemForm"
-import RichBodyEditor from "../RichBodyEditor/RichBodyEditor"
+import RichBodyView from "../RichBody/RichBodyView/RichBodyView"
 
 const ProblemView = () => {
+    const dispatch = useAppDispatch()
     const [mode, setMode] = useState<string>('view')
     const auth = useAppSelector(selectAuth)
     const authorID = auth.id
@@ -16,12 +17,10 @@ const ProblemView = () => {
     const list = useAppSelector(selectList);
     const currentEntry = list.filter(entry => entry.id === problemID)[0];
 
-    if (!problemID) {
-        return <h1>Missing Problem ID...</h1>
-    } else if (!currentEntry) {
-        return <h1>Invalid Problem ID</h1>
-    }
-
+    useEffect(() => {
+        console.log(generateView('view'))
+    }, [list])
+    
     const changeView = () => {
         setMode(prev => {
             switch(prev) {
@@ -35,12 +34,20 @@ const ProblemView = () => {
         })
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
+    const handleSubmit = (newEntry) => {
+        dispatch(updateItem(newEntry))
         changeView()
     }
-
+    
     const generateView = (mode: string) => {
+        const getDescription = () => {
+            try {
+                return JSON.parse(currentEntry.description)
+            } catch (err) {
+                return []
+            }
+        }
+
         switch(mode) {
             case 'view':
                 return (
@@ -66,7 +73,7 @@ const ProblemView = () => {
                             </div>
                         </div>
                         <div className="row p-3">
-                            {currentEntry.description}
+                            <RichBodyView content={getDescription()} />
                         </div>
                         <div className="row">
                             <div className="col-auto">Tags</div>
@@ -85,10 +92,15 @@ const ProblemView = () => {
         }
     }
 
+    if (!problemID) {
+        return <h1>Missing Problem ID...</h1>
+    } else if (!currentEntry) {
+        return <h1>Invalid Problem ID</h1>
+    }
+
     return (
         <div className="container px-4">
             {generateView(mode)}
-            {/* <RichBodyEditor /> */}
         </div>
     )
 }
