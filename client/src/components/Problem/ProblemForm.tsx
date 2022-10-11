@@ -1,5 +1,7 @@
 import { useState } from "react";
+import RichBodyEditor from "../RichBodyEditor/RichBodyEditor";
 import { EntryItem } from "../../features/types/list"
+import Separator from "../Separator/Separator";
 
 interface ProblemFormProps {
     entry: EntryItem,
@@ -25,13 +27,7 @@ const ProblemForm = (props: ProblemFormProps) => {
             <input className="form-control" type="text" name="title" value={title} onChange={e => setTitle(e.target.value)} />
           </div>
           <div className="input-group mb-3">
-            <label className="input-group-text" htmlFor="description">
-              Description
-            </label>
-            <textarea className="form-control" name="description" value={description} onChange={e => setDescription(e.target.value)}></textarea>
-          </div>
-          <div className="input-group mb-3">
-            <label className="form-group" htmlFor="difficulty">
+            <label className="input-group-text" htmlFor="difficulty">
               Difficulty: {dif}
             </label>
             <input
@@ -57,7 +53,13 @@ const ProblemForm = (props: ProblemFormProps) => {
             </label>
             <input className="form-control" type="text" name="tags" value={tags} onChange={e => setTags(e.target.value)} />
           </div>
-          <input className="btn btn-primary" type="submit" value="submit" />
+          <div className="input-group mb-3">
+            <label className="input-group-text" hidden htmlFor="description">
+              Description
+            </label>
+            <RichBodyEditor />
+          </div>
+          <input className="btn btn-primary" type="submit" value="Update" />
         </form>
       </>
     );

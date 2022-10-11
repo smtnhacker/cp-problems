@@ -6,6 +6,7 @@ import { useAppSelector } from "../../app/hooks"
 import { selectList } from "../../features/list/listSlice"
 import { selectAuth } from "../../features/auth/authSlice"
 import ProblemForm from "./ProblemForm"
+import RichBodyEditor from "../RichBodyEditor/RichBodyEditor"
 
 const ProblemView = () => {
     const [mode, setMode] = useState<string>('view')
@@ -87,6 +88,7 @@ const ProblemView = () => {
     return (
         <div className="container px-4">
             {generateView(mode)}
+            {/* <RichBodyEditor /> */}
         </div>
     )
 }
