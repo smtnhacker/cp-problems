@@ -8,6 +8,7 @@ const EditPage = () => {
     const list = useAppSelector(selectList)
 
     const currentProblem = loc.split('/').length > 2 ? loc.split('/')[2] : null;
+    const currentEntry = list.filter(entry => entry.id === currentProblem)[0];
 
     return (
         <div className="container">
@@ -17,9 +18,9 @@ const EditPage = () => {
                         <li className="breadcrumb-item">
                             <Link to="/problems">Problems</Link>
                         </li>
-                        { currentProblem && 
+                        { currentEntry && 
                             <li className="breadcrumb-item">{
-                                list.filter(entry => entry.id === currentProblem)[0].title
+                                currentEntry.title
                             }</li>
                         }
                     </ol>
