@@ -17,13 +17,13 @@ const root = createRoot(container);
 // axios.defaults.withCredentials = true;
 
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_OAUTH_CLIENT_ID}>
       <Provider store={store}>
         <RouteWrapper />
       </Provider>
     </GoogleOAuthProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

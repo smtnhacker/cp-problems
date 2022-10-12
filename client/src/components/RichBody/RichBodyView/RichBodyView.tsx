@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { Editable, withReact, Slate } from 'slate-react'
 import {
   createEditor,
@@ -6,22 +6,39 @@ import {
 import { withHistory } from 'slate-history'
 
 import { Element, Leaf } from '../components'
+import { EntryItem } from '../../../features/types/list'
 
 interface RichBodyEditorProps {
-  content: any[]
+  entry: EntryItem
 }
 
-const RichBodyView = (props: RichBodyEditorProps) => {
+const RichBodyView = (props: RichBodyEditorProps) => {  
   const renderElement = useCallback(props => <Element {...props} />, [])
   const renderLeaf = useCallback(props => <Leaf {...props} />, [])
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
 
+  const getDescription = (raw: string) => {
+    try {
+      const content = JSON.parse(raw)
+      return content
+    } catch (err) {
+      return [
+        {
+          type: "paragraph",
+          children: [{ text: "How was the problem?" }],
+        }
+      ]
+    }
+  }
+
+  const content = getDescription(props.entry.description)
+
   return (
     <div className="container p-2 " >
-
       <Slate 
+        key={props.entry.description}
         editor={editor} 
-        value={props.content}
+        value={content}
       >
         <Editable
           renderElement={renderElement}

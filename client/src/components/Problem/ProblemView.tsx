@@ -16,10 +16,6 @@ const ProblemView = () => {
     const { problemID } = useParams()
     const list = useAppSelector(selectList);
     const currentEntry = list.filter(entry => entry.id === problemID)[0];
-
-    useEffect(() => {
-        console.log(generateView('view'))
-    }, [list])
     
     const changeView = () => {
         setMode(prev => {
@@ -38,15 +34,8 @@ const ProblemView = () => {
         dispatch(updateItem(newEntry))
         changeView()
     }
-    
+
     const generateView = (mode: string) => {
-        const getDescription = () => {
-            try {
-                return JSON.parse(currentEntry.description)
-            } catch (err) {
-                return []
-            }
-        }
 
         switch(mode) {
             case 'view':
@@ -73,7 +62,7 @@ const ProblemView = () => {
                             </div>
                         </div>
                         <div className="row p-3">
-                            <RichBodyView content={getDescription()} />
+                            <RichBodyView entry={currentEntry} />
                         </div>
                         <div className="row">
                             <div className="col-auto">Tags</div>
