@@ -43,7 +43,7 @@ const NewProblemPage = () => {
         try {
             dispatch(addItem(newEntry));
             target.reset();
-            navigate(newEntry.id)
+            navigate(`/problems/${newEntry.id}`)
         } catch (err) {
             console.log(err);
         }
