@@ -14,16 +14,21 @@ const NavBar = () => {
                 <div className="col">
                     <Link className="navbar-brand" to="/">CP Progress Tracker</Link>
                 </div>
-                {loggedIn && 
-                    <ul className="nav col-auto">
+                <ul className="nav col-auto">
+                    <li className="nav-item">
+                        <Link className='nav-link' to="/posts">Posts</Link>
+                    </li>
+                {loggedIn &&
+                    <>
                         <li className="nav-item">
                             <Link className='nav-link' to="/dashboard">Dashboard</Link>
                         </li>
                         <li className="nav-item">
                             <Link className="nav-link" to="/problems">Problems</Link>
                         </li>
-                    </ul>
+                    </> 
                 }
+                </ul>
             </div>
             <ul className={`nav nav-fill ${styles.nav}`}>
                 {loggedIn ? 

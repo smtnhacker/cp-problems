@@ -3,12 +3,17 @@ import { useParams } from "react-router"
 import { IoPencilSharp } from "react-icons/io5"
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks"
-import { selectList, updateItem } from "../../features/list/listSlice"
+import { selectList, selectPosts, updateItem } from "../../features/list/listSlice"
 import { selectAuth } from "../../features/auth/authSlice"
 import ProblemForm from "./ProblemForm"
 import RichBodyView from "../RichBody/RichBodyView/RichBodyView"
+import EntryPage from "../EntryPage"
 
-const ProblemView = () => {
+interface ProblemViewProps {
+    readonly?: boolean
+}
+
+const ProblemView = (props: ProblemViewProps) => {
     const dispatch = useAppDispatch()
     const [mode, setMode] = useState<string>('view')
     const auth = useAppSelector(selectAuth)
@@ -16,6 +21,8 @@ const ProblemView = () => {
     const { problemID } = useParams()
     const list = useAppSelector(selectList);
     const currentEntry = list.filter(entry => entry.id === problemID)[0];
+    const allPost = useAppSelector(selectPosts);
+    const currentPost = allPost.filter(entry => entry.id === problemID)[0];
     
     const changeView = () => {
         setMode(prev => {
@@ -36,43 +43,10 @@ const ProblemView = () => {
     }
 
     const generateView = (mode: string) => {
-
         switch(mode) {
             case 'view':
                 return (
-                    <>
-                        <div className="row text-center">
-                            <h2>
-                                {currentEntry.title} 
-                                <button className="btn" onClick={changeView}>
-                                    <IoPencilSharp />
-                                </button>
-                            </h2>
-                            <div className="row">
-                                <small className="text-muted">
-                                    <a href={currentEntry.url} target="_blank" rel="noreferrer" className="nav-link">
-                                        {currentEntry.url}
-                                    </a>
-                                </small>
-                            </div>
-                            <div className="row">
-                                <small className="text-muted">
-                                    Rating: {currentEntry.difficulty}
-                                </small>
-                            </div>
-                        </div>
-                        <div className="row p-3">
-                            <RichBodyView entry={currentEntry} />
-                        </div>
-                        <div className="row">
-                            <div className="col-auto">Tags</div>
-                            <div className="col">
-                                {currentEntry.tags.map(tag => {
-                                    return <div key={tag} className="badge rounded-pill text-bg-light m-1">{tag}</div>
-                                })}
-                            </div>
-                        </div>
-                    </>
+                    <EntryPage entry={currentEntry} onChangeView={changeView} />
                 )
             case "edit":
                 return (
@@ -83,8 +57,11 @@ const ProblemView = () => {
 
     if (!problemID) {
         return <h1>Missing Problem ID...</h1>
-    } else if (!currentEntry) {
+    } else if (!currentEntry && !props.readonly) {
         return <h1>Invalid Problem ID</h1>
+    } else if (!currentEntry && currentPost) {
+        console.log(currentPost)
+        return <EntryPage entry={currentPost} />
     }
 
     return (

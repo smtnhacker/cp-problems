@@ -13,7 +13,7 @@ const ListView = (props: ListViewProps) => {
         <li key={entry.id} className="list-group-item">
           <div className="row">
             <div className="col-auto">
-              <button className="btn-close" onClick={() => props.onDelete(entry.id)}>
+              <button className="btn-close" onClick={() => props.onDelete(entry)}>
               </button>
             </div>
             <div className="col">

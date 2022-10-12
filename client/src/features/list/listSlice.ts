@@ -6,6 +6,7 @@ import { Tag, EntryItem, ListState } from "../types/list";
 
 const initialState: ListState = {
   value: [],
+  all: [],
   status: 'idle'
 };
 
@@ -13,11 +14,20 @@ const processData = (obj: any): EntryItem[] => {
   return Object.keys(obj).map((key: any): EntryItem => (obj[key] as EntryItem));
 }
 
+const getCurDate = (): string => {
+  return (new Date()).toISOString()
+}
+
 export const addItem = createAsyncThunk(
   'list/addItem',
   async (newItem: EntryItem) => {
     try {
-      const response = await model.addItem(newItem);
+      const withDate: EntryItem = {
+        ...newItem,
+        createdAt: getCurDate(),
+        lastModified: getCurDate(),
+      }
+      const response = await model.addItem(withDate);
       const { error, data } = response
       if (error) {
         console.log((error as any).message)
@@ -35,7 +45,11 @@ export const updateItem = createAsyncThunk(
   'list/updateItem',
   async (updatedItem: EntryItem) => {
     try {
-      const response = await model.addItem(updatedItem);
+      const withDate: EntryItem = {
+        ...updatedItem,
+        lastModified: getCurDate()
+      }
+      const response = await model.addItem(withDate);
       const { error, data } = response
       if (error) {
         console.log((error as any).message)
@@ -51,11 +65,11 @@ export const updateItem = createAsyncThunk(
 
 export const fetchItems = createAsyncThunk(
   'list/fetchItems',
-  async () => {
+  async (page: number) => {
     try {
-      const response = await model.fetchAllItems();
+      const response = await model.fetchAllItems(page);
       const data = processData(response.data)
-      console.log(data);
+      console.table(data);
       return data
     } catch (err: any) {
       console.log(err.message);
@@ -79,9 +93,9 @@ export const fetchUserItems = createAsyncThunk(
 
 export const deleteItem = createAsyncThunk(
   'list/deleteItem',
-  async (payload: { authorID: string, id: string }) => {
+  async (entry: EntryItem) => {
     try {
-      const response = await model.deleteItem(payload.authorID, payload.id);
+      const response = await model.deleteItem(entry);
       const data = (response.data as any).id;
       return data;
     } catch (err: any) {
@@ -111,6 +125,7 @@ export const listSlice = createSlice({
         else {
           state.status = 'idle';
           state.value = [action.payload, ...state.value];
+          state.all = [action.payload, ...state.all];
         }
       })
       .addCase(addItem.rejected, (state) => {
@@ -132,6 +147,13 @@ export const listSlice = createSlice({
               return entry
             }
           });
+          state.all = state.all.map((entry: EntryItem) => {
+            if (entry.id === action.payload.id) {
+              return action.payload
+            } else {
+              return entry
+            }
+          })
         }
       })
       .addCase(updateItem.rejected, (state) => {
@@ -146,7 +168,7 @@ export const listSlice = createSlice({
         }
         else {
           state.status = 'idle';  
-          state.value = [...action.payload];
+          state.all = [...action.payload];
         }
       })
       .addCase(fetchItems.rejected, (state) => {
@@ -158,6 +180,7 @@ export const listSlice = createSlice({
       .addCase(deleteItem.fulfilled, (state, action) => {
         state.status = 'idle'
         state.value = state.value.filter(entry => entry.id !== action.payload)
+        state.all = state.all.filter(entry => entry.id !== action.payload)
       })
       .addCase(deleteItem.rejected, (state) => {
         state.status = 'failed'
@@ -181,6 +204,7 @@ export const listSlice = createSlice({
 });
 
 export const selectList = (state: RootState) => state.list.value;
-export const selectStatus = (state: RootState) => state.list.status
+export const selectPosts = (state: RootState) => state.list.all;
+export const selectStatus = (state: RootState) => state.list.status;
 
 export default listSlice.reducer

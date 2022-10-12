@@ -13,9 +13,8 @@ const DataWrapper = () => {
     useEffect(() => {
     if (auth.loggedIn) {
       dispatch(fetchUserItems(auth.id));
-    } else {
-      dispatch(fetchItems());
     }
+    dispatch(fetchItems(1));
   }, [auth.loggedIn]);
 
     if (status === 'loading') {

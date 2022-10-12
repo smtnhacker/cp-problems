@@ -7,10 +7,14 @@ export interface EntryItem {
     description: string,
     difficulty: number,
     url: string, 
-    tags: Tag[]
+    tags: Tag[],
+    createdAt?: string,
+    lastModified?: string,
+    page?: string
 }
 
 export interface ListState {
     value: EntryItem[],
+    all: EntryItem[],
     status: 'idle' | 'loading' | 'failed'
 }

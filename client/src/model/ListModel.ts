@@ -22,33 +22,27 @@ class ListModel {
         this.api = api + '/list';
     }
 
-    async fetchAllItems() {
+    async fetchAllItems(page: number) {
 
         if (HAS_FIREBASE) {
             try {
-                const listRef = ref(db);
-                const data = (await get(child(listRef, 'user'))).val() ?? {};
+                const postsRef = ref(db, 'posts');
+                const data = (await get(child(postsRef, page.toString()))).val() ?? {};
                 const flattenedData: { [key: string]: RawEntryItem } = {}
-                Object.keys(data).forEach(authorID => {
-                    Object.keys(data[authorID]).forEach(id => {
-                        const temp: any = data[authorID][id];
-                        temp.difficulty = parseInt(temp.difficulty)
-                        flattenedData[id] = temp;
-                    })
+                Object.keys(data).forEach(id => {
+
+                    // skip placeholder
+                    if (id === 'entry_id') {
+                        return;
+                    }
+
+                    const temp: any = data[id];
+                    temp.difficulty = parseInt(temp.difficulty)
+                    flattenedData[id] = temp;
                 })
                 console.dir({ action: "fetchAll", data: flattenedData });    
                 return { error: null, data: flattenedData };
             } catch (err) {
-                return { error: err, data: {} }
-            }
-        }
-
-        else {
-            try {
-                const response: EntryItemResponse = await axios.get(`${this.api}`);
-                return { error: null, data: response.data };
-            } catch (err) {
-                console.log(err);
                 return { error: err, data: {} }
             }
         }
@@ -72,51 +66,70 @@ class ListModel {
             }
         }
 
-        else {
-            return { error: "no firebase", data: { } }
-        }
-
     }
 
     async addItem(newItem: EntryItem) {
 
         if (HAS_FIREBASE) {
             const { authorID, id } = newItem;
-            const listRef = ref(db, `user/${authorID}/${id}`); 
-            set(listRef, newItem);
-            return { error: null, data: newItem }
-        }
 
-        try {
-            const response: { data: EntryItem } = await axios.post(`${this.api}`, {
-                    payload: newItem
-                });
-            return { error: null, data: response.data }
-        } catch (err) {
-            console.log(err);
-            return { error: err, data: null }
+            const dbRef = ref(db)
+            
+            // get the page number first
+            const pageDetails = (await get(child(dbRef, 'page_detail'))).val() as { count: number, cur_page: number }
+            // update the page if necessary
+            if (pageDetails.count === 1000) {
+                pageDetails.cur_page += 1
+                set(child(dbRef, "page_detail"), {
+                    count: 0,
+                    cur_page: pageDetails.cur_page
+                })
+            }
+            
+            console.log(pageDetails)
+            const withPageNumber: EntryItem = {
+                ...newItem,
+                page: pageDetails.cur_page.toString()
+            }
+
+            console.dir(withPageNumber)
+
+            // updated the user db
+            const userItemRef = ref(db, `user/${authorID}/${id}`); 
+            set(userItemRef, withPageNumber);
+
+            // update all post db
+            const allpostRef = ref(db, `posts/${pageDetails.cur_page}`)
+            set(child(allpostRef, id), withPageNumber)
+
+            // update page count
+            set(child(dbRef, "page_detail"), {
+                ...pageDetails,
+                count: pageDetails.count + 1
+            })
+            return { error: null, data: withPageNumber }
         }
     }
 
-    async deleteItem(authorID: string, entryID: string) {
+    async deleteItem(entry: EntryItem) {
+
+        const { authorID, id, page } = entry
 
         if (HAS_FIREBASE) {
-            const itemRef = ref(db, `user/${authorID}/${entryID}`)
+
             try {
+                // delete from user
+                const itemRef = ref(db, `user/${authorID}/${id}`)
                 await remove(itemRef);
-                return { error: null, data: { id: entryID }}
+
+                // delete from all post
+                await remove(ref(db, `posts/${page}/${id}`))
+
+                return { error: null, data: entry }
             } catch (err) {
                 console.log(err);
                 return { error: err, data: "" }
             }
-        }
-
-        try {
-            const response: { data: {id: string} } = await axios.delete(`${this.api}/${entryID}`);
-            return { error: null, data: response.data };
-        } catch (err) {
-            console.log(err);
-            return { error: err, data: "" }
         }
     }
 }
