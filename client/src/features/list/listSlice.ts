@@ -181,5 +181,6 @@ export const listSlice = createSlice({
 });
 
 export const selectList = (state: RootState) => state.list.value;
+export const selectStatus = (state: RootState) => state.list.status
 
 export default listSlice.reducer

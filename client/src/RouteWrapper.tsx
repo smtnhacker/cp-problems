@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router"
 import { BrowserRouter } from "react-router-dom"
 import App from "./App"
 import { useAppDispatch, useAppSelector } from "./app/hooks"
+import DataWrapper from "./components/DataWrapper"
 import ProblemView from "./components/Problem/ProblemView"
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute"
 import { authLogin, selectAuth } from "./features/auth/authSlice"
@@ -52,7 +53,9 @@ const RouteWrapper = () => {
           />
           <Route
             element={
-              <ProtectedRoute redirectPath={LOGIN_PATH} getAuthentication={getAuthentication} />
+              <ProtectedRoute redirectPath={LOGIN_PATH} getAuthentication={getAuthentication}>
+                <DataWrapper />
+              </ProtectedRoute>
             }
           >
             <Route path="/dashboard" element={<DashboardPage />}></Route>

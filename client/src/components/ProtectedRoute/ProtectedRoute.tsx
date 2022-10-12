@@ -29,7 +29,7 @@ const ProtectedRoute = (props: ProtectedRouteProps): JSX.Element => {
     }
 
     return (
-        props.children ? <>props.children</> : <Outlet />        
+        props.children ? <>{props.children}</> : <Outlet />        
     )
 }
 

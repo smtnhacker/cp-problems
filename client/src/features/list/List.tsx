@@ -1,10 +1,10 @@
-import { SyntheticEvent, useEffect } from "react";
+import { SyntheticEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router";
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { EntryItem } from "../types/list";
-import { addItem, deleteItem, selectList, fetchItems, fetchUserItems } from "./listSlice";
+import { addItem, deleteItem, selectList } from "./listSlice";
 import { selectAuth } from "../auth/authSlice";
 import getBestTag from "../../util/getBestTag";
 import removeDuplicates from "../../util/removeDuplicates";
@@ -18,14 +18,6 @@ function List() {
   const dispatch = useAppDispatch();
   const auth = useAppSelector(selectAuth);
   const navigate = useNavigate()
-
-  useEffect(() => {
-    if (auth.loggedIn) {
-      dispatch(fetchUserItems(auth.id));
-    } else {
-      dispatch(fetchItems());
-    }
-  }, [auth.loggedIn]);
 
   const handleSubmit = (e: SyntheticEvent): void => {
     e.preventDefault();
