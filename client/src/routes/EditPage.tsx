@@ -18,10 +18,15 @@ const EditPage = () => {
                         <li className="breadcrumb-item">
                             <Link to="/problems">Problems</Link>
                         </li>
-                        { currentEntry && 
+                        { (currentEntry && 
                             <li className="breadcrumb-item">{
                                 currentEntry.title
-                            }</li>
+                            }</li>) || 
+                            (currentProblem === 'new' &&
+                            <li className="breadcrumb-item">
+                                New
+                            </li>
+                            )
                         }
                     </ol>
                 </nav>
