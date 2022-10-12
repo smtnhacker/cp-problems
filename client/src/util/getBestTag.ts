@@ -3,6 +3,11 @@ import editDistance from "./editDistance";
 
 export default function getBestTag(tag: string): string {
 
+    // Don't try to change nothing
+    if (tag.length === 0) {
+        return tag
+    }
+
     const lowerTag = tag.toLocaleLowerCase();
 
     // For special cases

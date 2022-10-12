@@ -27,4 +27,8 @@ describe('getBestTag function', () => {
         expect(getBestTag('dFs')).toMatch('DFS');
         expect(getBestTag('TREES')).toMatch('Trees');
     });
+
+    it('should let an empty string remain empty', () => {
+        expect(getBestTag("")).toMatch("");
+    })
 })
