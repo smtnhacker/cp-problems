@@ -12,7 +12,7 @@ const NavBar = () => {
         <header className={`navbar bg-light ${styles.header}`}>
             <div className="logo row">
                 <div className="col">
-                    <Link className="navbar-brand" to="/">CP Problems</Link>
+                    <Link className="navbar-brand" to="/">CP Progress Tracker</Link>
                 </div>
                 {loggedIn && 
                     <ul className="nav col-auto">
