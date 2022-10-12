@@ -1,5 +1,6 @@
 import { SyntheticEvent, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { useNavigate } from "react-router";
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { EntryItem } from "../types/list";
@@ -16,6 +17,7 @@ function List() {
   const list = useAppSelector(selectList);
   const dispatch = useAppDispatch();
   const auth = useAppSelector(selectAuth);
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (auth.loggedIn) {
@@ -43,7 +45,7 @@ function List() {
       id: uuidv4(),
       authorID: auth.id,
       title: target.title.value,
-      description: target.description.value,
+      description: "", //target.description.value,
       difficulty: target.difficulty.value,
       url: target.url.value,
       tags: tags || [],
@@ -52,6 +54,7 @@ function List() {
     try {
       dispatch(addItem(newEntry));
       target.reset();
+      navigate(newEntry.id)
     } catch (err) {
       console.log(err);
     }
