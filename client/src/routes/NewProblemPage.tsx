@@ -38,6 +38,8 @@ const NewProblemPage = () => {
             difficulty: target.difficulty.value,
             url: target.url.value,
             tags: tags || [],
+            slug: target.slug.value,
+            status: "public"
         };
 
         try {

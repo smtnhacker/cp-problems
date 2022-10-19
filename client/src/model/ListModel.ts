@@ -1,18 +1,37 @@
-import axios from "axios";
-import { set, get, ref, onValue, child, remove } from "firebase/database";
+import { set, get, ref, child, remove } from "firebase/database";
 
 import { API_ENDPOINT, HAS_FIREBASE } from "../config"
 import { db } from "../util/firebase";
-import { EntryItem } from "../features/types/list"
+import { EntryItem, EntryHeader } from "../features/types/list"
 
-interface EntryItemResponse {
-    data: {
-        [key: string]: EntryItem
-    }
+interface RawEntryHeader extends Omit<EntryHeader, 'difficulty'> {
+    difficulty: string
 }
 
 interface RawEntryItem extends Omit<EntryItem, 'difficulty'> {
     difficulty: string
+}
+
+interface RawPage {
+    [id: string]: RawEntryHeader
+}
+
+interface BaseObject<T> {
+    [id: string]: T
+}
+
+interface BaseModelResponse {
+    error: any,
+    data: any
+}
+
+export interface ModelHeaderResponse extends Omit<BaseModelResponse, 'data'> {
+    data: Array<EntryHeader>
+}
+
+export interface ModelPostReponse extends Omit<BaseModelResponse, 'data'> {
+    data: EntryItem,
+    errorCode?: number
 }
 
 class ListModel {
@@ -22,108 +41,188 @@ class ListModel {
         this.api = api + '/list';
     }
 
-    async fetchAllItems(page: number) {
+    async fetchAllItems(amount: number): Promise<ModelHeaderResponse> {
 
         if (HAS_FIREBASE) {
-            try {
-                const postsRef = ref(db, 'posts');
-                const data = (await get(child(postsRef, page.toString()))).val() ?? {};
-                const flattenedData: { [key: string]: RawEntryItem } = {}
-                Object.keys(data).forEach(id => {
 
-                    // skip placeholder
-                    if (id === 'entry_id') {
-                        return;
+            try {
+                const data: EntryHeader[] = [];
+                const pageDetailRef = ref(db, 'page_detail')
+                const pagesRef = ref(db, 'pages')
+
+                // get current page + 1
+                let curPage: number = parseInt(
+                    (await get(child(pageDetailRef, 'curPage'))).val() ?? "1"
+                ) + 1;
+
+                while (data.length < amount) {
+                    // check if there is still next page
+                    if (curPage === 1) {
+                        break;
                     }
 
-                    const temp: any = data[id];
-                    temp.difficulty = parseInt(temp.difficulty)
-                    flattenedData[id] = temp;
-                })
-                console.dir({ action: "fetchAll", data: flattenedData });    
-                return { error: null, data: flattenedData };
+                    // if there is, get the data there
+                    curPage -= 1;
+                    const pageData: RawPage = (await get(child(pagesRef, curPage.toString()))).val() ?? {}
+                    const flattenedPage: EntryHeader[] = Object.keys(pageData).map(key => {
+                        const curHeader: RawEntryHeader = pageData[key];
+                        return { ...curHeader, difficulty: parseInt(curHeader.difficulty) }
+                    })
+                    
+                    // remove unnecessary data
+                    const filteredData: EntryHeader[] = flattenedPage.filter(entry => {
+                        if (entry.id === 'entry_id') {
+                            return false;
+                        }
+                        return true;
+                    })
+
+                    // append data to data
+                    data.push(...filteredData);
+                }
+
+                return {
+                    error: null,
+                    data: data.length < amount ? data : data.slice(0, amount)
+                }
             } catch (err) {
-                return { error: err, data: {} }
+                return { error: err, data: [] }
+            }
+        } else {
+            return {
+                error: "No supported database used",
+                data: []
             }
         }
 
     }
 
-    async fetchUserItems(authorID: string) {
+    async fetchUserItems(authorID: string): Promise<ModelHeaderResponse> {
+        type RawResponse = BaseObject<Omit<RawEntryHeader, 'lastModified' | 'authorID'>>
 
         if (HAS_FIREBASE) {
             try {
-                const listRef = ref(db);
-                const data = (await get(child(listRef, `user/${authorID}`))).val() ?? {};
-                const flattenedData: { [key: string]: EntryItem } = {}
-                Object.keys(data).forEach(id => {
-                    flattenedData[id] = { ...data[id], difficulty: parseInt(data[id].difficulty) };
+                const userRef = ref(db, 'user');
+                const rawData: RawResponse = (await get(child(userRef, `${authorID}/posts`))).val() ?? {};
+                const data: EntryHeader[] = Object.keys(rawData).map(key => {
+                    return { ...rawData[key], difficulty: parseInt(rawData[key].difficulty), authorID: authorID}
                 })
-                console.dir({ action: "fetchUserAll", id: authorID, data: flattenedData });    
-                return { error: null, data: flattenedData };
+
+                return { error: null, data: data };
             } catch (err) {
-                return { error: err, data: {} }
+                return { error: err, data: [] }
+            }
+        } else {
+            return {
+                error: "No supported database used",
+                data: []
             }
         }
 
     }
 
-    async addItem(newItem: EntryItem) {
+    async fetchPost(id: string): Promise<ModelPostReponse> {
+
+        if (HAS_FIREBASE) {
+            try {
+                const postsRef = ref(db, 'posts')
+                const rawData: RawEntryItem | null = (await get(child(postsRef, id))).val()
+
+                if (rawData === null) {
+                    return { error: "Page not found", errorCode: 404, data: null }
+                }
+
+                const data: EntryItem = { ...rawData, difficulty: parseInt(rawData.difficulty) }
+                return { error: null, data: data }
+
+            } catch (err) {
+                return { error: err, data: null }
+            }
+        } else {
+            return {
+                error: "No supported database used",
+                data: null
+            }
+        }
+    }
+
+    async addItem(newItem: EntryItem): Promise<BaseModelResponse> {
 
         if (HAS_FIREBASE) {
             const { authorID, id } = newItem;
-
             const dbRef = ref(db)
-            
+
             // get the page number first
-            const pageDetails = (await get(child(dbRef, 'page_detail'))).val() as { count: number, cur_page: number }
+            const pageDetails = (await get(child(dbRef, 'page_detail'))).val() as { count: number, curPage: number }
+            console.log(pageDetails)
             // update the page if necessary
-            if (pageDetails.count === 1000) {
-                pageDetails.cur_page += 1
+            if (pageDetails.count === 100) {
+                pageDetails.curPage += 1
                 set(child(dbRef, "page_detail"), {
                     count: 0,
-                    cur_page: pageDetails.cur_page
+                    curPage: pageDetails.curPage
                 })
             }
-            
+
             console.log(pageDetails)
-            const withPageNumber: EntryItem = {
-                ...newItem,
-                page: pageDetails.cur_page.toString()
+
+            // create a lightweight header file
+            const entryHeader: EntryHeader = {
+                difficulty: newItem.difficulty,
+                id: newItem.id,
+                slug: newItem.slug,
+                title: newItem.title,
+                tags: newItem.tags,
+                authorID: newItem.authorID,
+                ...(newItem.createdAt && { createdAt: newItem.createdAt }),
+                ...(newItem.lastModified && { lastModified: newItem.lastModified })
             }
 
-            console.dir(withPageNumber)
-
             // updated the user db
-            const userItemRef = ref(db, `user/${authorID}/${id}`); 
-            set(userItemRef, withPageNumber);
+            const userItemRef = ref(db, `user/${authorID}/posts/${id}`);
+            set(userItemRef, entryHeader);
 
             // update all post db
-            const allpostRef = ref(db, `posts/${pageDetails.cur_page}`)
-            set(child(allpostRef, id), withPageNumber)
+            const allpostRef = ref(db, `posts/${id}`)
+            set(allpostRef, newItem)
+
+            // update pages db
+            console.log(`pages/${pageDetails.curPage}/${pageDetails.count}`)
+            const pageRef = ref(db, `pages/${pageDetails.curPage}/${pageDetails.count}`)
+            set(pageRef, entryHeader)
 
             // update page count
             set(child(dbRef, "page_detail"), {
                 ...pageDetails,
                 count: pageDetails.count + 1
             })
-            return { error: null, data: withPageNumber }
+
+            return { error: null, data: newItem }
+        } else {
+            return {
+                error: "No supported database",
+                data: null
+            }
         }
     }
 
-    async deleteItem(entry: EntryItem) {
+    async deleteItem(entry: EntryItem): Promise<BaseModelResponse> {
 
-        const { authorID, id, page } = entry
+        const { authorID, id } = entry
 
         if (HAS_FIREBASE) {
 
             try {
                 // delete from user
-                const itemRef = ref(db, `user/${authorID}/${id}`)
-                await remove(itemRef);
+                // do not delete sample
+                const itemRef = ref(db, `user/${authorID}/posts/${id}`)
+                if (id !== 'entry_id')
+                    await remove(itemRef);
 
                 // delete from all post
-                await remove(ref(db, `posts/${page}/${id}`))
+                // do not delete sample
+                if (id !== 'entry_id')
+                    await remove(ref(db, `posts/${id}`))
 
                 return { error: null, data: entry }
             } catch (err) {

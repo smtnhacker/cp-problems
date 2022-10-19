@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState, AppThunk } from "../../app/store";
 import model from "../../model/ListModel";
-import { Tag, EntryItem, ListState } from "../types/list";
+import { EntryHeader, EntryItem, ListState } from "../types/list";
 
 const initialState: ListState = {
   value: [],
@@ -10,8 +10,9 @@ const initialState: ListState = {
   status: 'idle'
 };
 
-const processData = (obj: any): EntryItem[] => {
-  return Object.keys(obj).map((key: any): EntryItem => (obj[key] as EntryItem));
+const processData = (obj: any[]): any[] => {
+  return obj
+  // return Object.keys(obj).map((key: any): EntryItem => (obj[key] as EntryItem));
 }
 
 const getCurDate = (): string => {
@@ -30,12 +31,12 @@ export const addItem = createAsyncThunk(
       const response = await model.addItem(withDate);
       const { error, data } = response
       if (error) {
-        console.log((error as any).message)
+        console.log(error)
         throw error
       }
       return data as EntryItem
     } catch (err: any) {
-      console.log(err.message)
+      console.log(err)
       throw err
     }
   }
@@ -57,7 +58,7 @@ export const updateItem = createAsyncThunk(
       }
       return data as EntryItem
     } catch (err: any) {
-      console.log(err.message)
+      console.log(err)
       throw err
     }
   }
@@ -65,14 +66,14 @@ export const updateItem = createAsyncThunk(
 
 export const fetchItems = createAsyncThunk(
   'list/fetchItems',
-  async (page: number) => {
+  async (amount: number): Promise<EntryHeader[]> => {
     try {
-      const response = await model.fetchAllItems(page);
-      const data = processData(response.data)
+      const response = await model.fetchAllItems(amount);
+      const data = response.data
       console.table(data);
       return data
     } catch (err: any) {
-      console.log(err.message);
+      console.log(err);
     }
   }
 )
@@ -82,11 +83,11 @@ export const fetchUserItems = createAsyncThunk(
   async (authorID: string) => {
     try {
       const response = await model.fetchUserItems(authorID);
-      const data = processData(response.data)
+      const data = response.data
       console.log(data);
       return data
     } catch (err: any) {
-      console.log(err.message);
+      console.log(err);
     }
   }
 )
@@ -99,7 +100,7 @@ export const deleteItem = createAsyncThunk(
       const data = (response.data as any).id;
       return data;
     } catch (err: any) {
-      console.log(err.message);
+      console.log(err);
     }
   }
 )
@@ -147,7 +148,7 @@ export const listSlice = createSlice({
               return entry
             }
           });
-          state.all = state.all.map((entry: EntryItem) => {
+          state.all = state.all.map((entry: EntryHeader) => {
             if (entry.id === action.payload.id) {
               return action.payload
             } else {
@@ -206,5 +207,16 @@ export const listSlice = createSlice({
 export const selectList = (state: RootState) => state.list.value;
 export const selectPosts = (state: RootState) => state.list.all;
 export const selectStatus = (state: RootState) => state.list.status;
+
+export const getPost = async (id: string): Promise<EntryItem> => {
+  const { error, errorCode, data} = await model.fetchPost(id);
+  if (errorCode && errorCode === 404) {
+    throw error
+  } else if (error) {
+    throw error
+  } else {
+    return data
+  }
+}
 
 export default listSlice.reducer

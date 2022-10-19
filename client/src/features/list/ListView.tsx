@@ -1,15 +1,15 @@
 import { Link } from "react-router-dom";
-import { EntryItem } from "../types/list";
+import { EntryHeader } from "../types/list";
 
 interface ListViewProps {
-  list: EntryItem[];
+  list: EntryHeader[];
   onDelete: Function;
 }
 
 const ListView = (props: ListViewProps) => {
   return (
     <ul className="list-group" style={{ margin: "12px" }}>
-      {props.list.map((entry: EntryItem) => (
+      {props.list.map((entry: EntryHeader) => (
         <li key={entry.id} className="list-group-item">
           <div className="row">
             <div className="col-auto">

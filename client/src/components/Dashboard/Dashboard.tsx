@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { EntryItem } from '../../features/types/list'
+import { EntryHeader } from '../../features/types/list'
 import ProgressBar from './ProgressBar'
 
 interface DashboardProps {
-    list: EntryItem[]
+    list: EntryHeader[]
 }
 
 interface TagDifficulty {
@@ -50,7 +50,7 @@ const Dashboard = (props: DashboardProps) => {
     useEffect(() => {
         setLoading(true);
         console.log(props.list)
-        const tagDiffList: TagDifficulty[] = props.list.reduce((total: TagDifficulty[], cur: EntryItem) => {
+        const tagDiffList: TagDifficulty[] = props.list.reduce((total: TagDifficulty[], cur: EntryHeader) => {
             const flattened: TagDifficulty[] = cur.tags.map((tag): TagDifficulty => (
                 { tag: tag, difficulty: cur.difficulty}
             ))

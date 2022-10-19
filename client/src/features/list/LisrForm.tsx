@@ -11,6 +11,10 @@ const ListForm = (props: ListFormProps) => {
     <div className="container">
       <form onSubmit={props.onSubmit}>
         <div className="mb-3 input-group">
+          <label className="input-group-text" htmlFor="slug">
+            Slug
+          </label>
+          <input className="form-control" type="text" name="slug" />
           <label className="input-group-text" htmlFor="title">
             Title
           </label>
@@ -43,12 +47,6 @@ const ListForm = (props: ListFormProps) => {
           </label>
           <input className="form-control" type="text" name="tags" />
         </div>
-        {/* <div className="input-group mb-3">
-          <label className="input-group-text" htmlFor="description">
-            Description
-          </label>
-          <textarea className="form-control" name="description"></textarea>
-        </div> */}
         <input className="btn btn-primary" type="submit" value="submit" />
       </form>
     </div>

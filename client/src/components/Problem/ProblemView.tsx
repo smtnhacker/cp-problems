@@ -3,26 +3,43 @@ import { useParams } from "react-router"
 import { IoPencilSharp } from "react-icons/io5"
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks"
-import { selectList, selectPosts, updateItem } from "../../features/list/listSlice"
+import { getPost, selectList, selectPosts, updateItem } from "../../features/list/listSlice"
 import { selectAuth } from "../../features/auth/authSlice"
 import ProblemForm from "./ProblemForm"
 import RichBodyView from "../RichBody/RichBodyView/RichBodyView"
 import EntryPage from "../EntryPage"
+import { EntryHeader, EntryItem } from "../../features/types/list"
 
 interface ProblemViewProps {
     readonly?: boolean
 }
 
 const ProblemView = (props: ProblemViewProps) => {
+    const [loading, setLoading] = useState(true)
     const dispatch = useAppDispatch()
     const [mode, setMode] = useState<string>('view')
     const auth = useAppSelector(selectAuth)
     const authorID = auth.id
     const { problemID } = useParams()
-    const list = useAppSelector(selectList);
-    const currentEntry = list.filter(entry => entry.id === problemID)[0];
-    const allPost = useAppSelector(selectPosts);
-    const currentPost = allPost.filter(entry => entry.id === problemID)[0];
+    const [currentEntry, setCurrentEntry] = useState<EntryItem>()
+
+    useEffect(() => {
+        const getCurrent = async () => {
+            try {
+                const data = await getPost(problemID);
+                console.log("Got entry item:", data)
+                setCurrentEntry(data);
+            } catch (err) {
+                console.log(err)
+            }
+        }
+        if (problemID) {
+            getCurrent()
+                .then(() => setLoading(false))
+        } else {
+            setLoading(false)
+        }
+    }, [])
     
     const changeView = () => {
         setMode(prev => {
@@ -55,14 +72,13 @@ const ProblemView = (props: ProblemViewProps) => {
         }
     }
 
-    if (!problemID) {
+    if (loading) {
+        return <h1>Loading...</h1>
+    } else if (!problemID) {
         return <h1>Missing Problem ID...</h1>
     } else if (!currentEntry && !props.readonly) {
         return <h1>Invalid Problem ID</h1>
-    } else if (!currentEntry && currentPost) {
-        console.log(currentPost)
-        return <EntryPage entry={currentPost} />
-    }
+    } 
 
     return (
         <div className="container px-4">

@@ -14,7 +14,7 @@ const DataWrapper = () => {
     if (auth.loggedIn) {
       dispatch(fetchUserItems(auth.id));
     }
-    dispatch(fetchItems(1));
+    dispatch(fetchItems(100));
   }, [auth.loggedIn]);
 
     if (status === 'loading') {

@@ -1,8 +1,6 @@
 import { IoPencilSharp } from "react-icons/io5";
-import { useParams } from "react-router";
 import { useAppSelector } from "../app/hooks";
 import { selectAuth } from "../features/auth/authSlice";
-import { selectList } from "../features/list/listSlice";
 import { EntryItem } from "../features/types/list";
 import RichBodyView from "./RichBody/RichBodyView/RichBodyView";
 

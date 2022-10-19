@@ -15,6 +15,7 @@ const ProblemForm = (props: ProblemFormProps) => {
     const [title, setTitle] = useState(props.entry.title)
     const [description, setDescription] = useState("")
     const [url, setUrl] = useState(props.entry.url)
+    const [slug, setSlug] = useState(props.entry.slug)
     const [tags, setTags] = useState(props.entry.tags.reduce((total, cur) => total ? total + ", " + cur : cur, ""))
 
     const initialDescription: any[] | null = useMemo(() => {
@@ -57,6 +58,8 @@ const ProblemForm = (props: ProblemFormProps) => {
         difficulty: dif,
         url: url,
         tags: newTags,
+        slug: slug,
+        status: "public"
       };
 
       console.log(newEntry)
@@ -68,7 +71,11 @@ const ProblemForm = (props: ProblemFormProps) => {
       <>
         <form onSubmit={handleSubmit}>
           <input type="text" name="authorID" value={props.authorID} hidden readOnly />
-          <div className="mb-3 input-group">
+          <div className="mb-3 input-group row">
+            <label className="input-group-text" htmlFor="slug">
+              Slug
+            </label>
+            <input className="form-control" type="text" name="slug" value={title} onChange={e => setSlug(e.target.value)} />
             <label className="input-group-text" htmlFor="title">
               Title
             </label>
