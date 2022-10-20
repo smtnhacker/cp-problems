@@ -14,6 +14,7 @@ import EditPage from "./routes/EditPage"
 import LandingPage from "./routes/LandingPage"
 import LoginPage from "./routes/LoginPage"
 import NewProblemPage from "./routes/NewProblemPage"
+import ProfilePage from "./routes/ProfilePage"
 import PublicPage from "./routes/PublicPage"
 import SignupPage from "./routes/SignupPage"
 
@@ -69,6 +70,8 @@ const RouteWrapper = () => {
                 <Route index element={<List />} />
                 <Route path="new" element={<NewProblemPage />} />
                 <Route path=":problemID" element={<ProblemView />} />
+              </Route>
+              <Route path="/profile" element={<ProfilePage />}>
               </Route>
             </Route>
           </Route>
