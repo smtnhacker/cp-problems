@@ -51,6 +51,9 @@ const Dashboard = (props: DashboardProps) => {
         setLoading(true);
         console.log(props.list)
         const tagDiffList: TagDifficulty[] = props.list.reduce((total: TagDifficulty[], cur: EntryHeader) => {
+            if (!cur.tags || cur.tags[0] === "") {
+                return total
+            }
             const flattened: TagDifficulty[] = cur.tags.map((tag): TagDifficulty => (
                 { tag: tag, difficulty: cur.difficulty}
             ))
@@ -74,11 +77,11 @@ const Dashboard = (props: DashboardProps) => {
                 {loading ? 
                 <p>Loading...</p>
                 :
-                Object.keys(tags).map(tag => (
+                Object.keys(tags).sort((a, b) => tags[b] - tags[a]).map(tag => (
                     <li key={tag} className="list-group-item">
                         <div className="row">
-                            <div className="col-1">{tag}</div>
-                            <div className="col-11">
+                            <div className="col-2">{tag}</div>
+                            <div className="col-10">
                                 <ProgressBar min={0} max={4000} width={tags[tag] * 100 / 4000} text={tags[tag].toFixed()} />
                             </div>
                         </div>

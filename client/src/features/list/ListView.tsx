@@ -10,6 +10,7 @@ const ListView = (props: ListViewProps) => {
   return (
     <ul className="list-group" style={{ margin: "12px" }}>
       {props.list.map((entry: EntryHeader) => (
+        (entry as any).status !== 'draft' &&
         <li key={entry.id} className="list-group-item">
           <div className="row">
             <div className="col-auto">
@@ -17,9 +18,9 @@ const ListView = (props: ListViewProps) => {
               </button>
             </div>
             <div className="col">
-              <Link className="nav-link" to={`/problems/${entry.id || "404"}`}>
-                <span>{entry.title}</span> <span className="text-muted">({entry.difficulty})</span>
-              </Link>
+                <Link className="nav-link" to={`/problems/${entry.id || "404"}`}>
+                  <span>{entry.slug} {entry.title}</span> <span className="text-muted">({entry.difficulty})</span>
+                </Link>
             </div>
           </div>
         </li>

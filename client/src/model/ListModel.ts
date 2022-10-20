@@ -146,6 +146,40 @@ class ListModel {
         }
     }
 
+    async addHeaders(newHeaders: EntryHeader, authorID: string) {
+        if (HAS_FIREBASE) {
+            // get current headers
+            const userRef = ref(db, 'user');
+            const rawData = (await get(child(userRef, `${authorID}/posts`))).val() ?? {};
+            // updated the user db
+            const updatedHeaders = {
+                ...rawData,
+                ...newHeaders
+            }
+            const userItemsRef = ref(db, `user/${authorID}/posts`);
+            set(userItemsRef, updatedHeaders);
+        }
+    }
+
+    async deleteDrafts(authorID: string) {
+        if (HAS_FIREBASE) {
+            // get current headers
+            const userRef = ref(db, 'user');
+            const rawData = (await get(child(userRef, `${authorID}/posts`))).val() ?? {};
+            // filter
+            const newHeaders = { }
+            Object.keys(rawData).forEach(key => {
+                if (rawData[key].status === 'draft') {
+                    return;
+                }
+                newHeaders[key] = rawData[key]
+            })
+            // update
+            const userItemsRef = ref(db, `user/${authorID}/posts`);
+            set(userItemsRef, newHeaders);
+        }
+    }
+
     async addItem(newItem: EntryItem): Promise<BaseModelResponse> {
 
         if (HAS_FIREBASE) {
