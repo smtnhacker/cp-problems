@@ -107,4 +107,11 @@ describe('CF Model user submission fetching', () => {
         const { data } = await CFModel.fetchUserSubmissions(CF_HANDLE_MOCK, AUTHOD_ID_MOCK)
         expect(data).toStrictEqual([passedHeader])
     })
+
+    it('does not crash on bad handle', async () => {
+        fetch.mockImplementationOnce(() => Promise.reject("handle: User with handle Fefer_Iva not found"))
+        expect.assertions(1)
+        const { error } = await CFModel.fetchUserSubmissions(CF_HANDLE_MOCK, AUTHOD_ID_MOCK)
+        expect(error).not.toBeNull()
+    })
 })
