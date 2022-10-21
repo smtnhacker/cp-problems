@@ -58,7 +58,8 @@ class CFModel {
                 `https://codeforces.com/api/user.status?handle=${cfHandle}`)
                 
             if (!response.ok) {
-                return { error: response.statusText, data: null }
+                const { comment } = await response.json()
+                return { error: comment, data: null }
             }
             
             const rawData: { status: string, result: CFSubmission[] } = await response.json()
