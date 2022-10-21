@@ -191,17 +191,15 @@ class ListModel {
 
             // get the page number first
             const pageDetails = (await get(child(dbRef, 'page_detail'))).val() as { count: number, curPage: number }
-            console.log(pageDetails)
             // update the page if necessary
             if (pageDetails.count === 100) {
                 pageDetails.curPage += 1
+                pageDetails.count = 0
                 set(child(dbRef, "page_detail"), {
                     count: 0,
                     curPage: pageDetails.curPage
                 })
             }
-
-            console.log(pageDetails)
 
             // create a lightweight header file
             const entryHeader: EntryHeader = {
@@ -224,7 +222,6 @@ class ListModel {
             set(allpostRef, newItem)
 
             // update pages db
-            console.log(`pages/${pageDetails.curPage}/${pageDetails.count}`)
             const pageRef = ref(db, `pages/${pageDetails.curPage}/${pageDetails.count}`)
             set(pageRef, entryHeader)
 

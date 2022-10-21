@@ -10,6 +10,31 @@ jest.mock("../util/firebase")
 
 const AUTHOR_ID_MOCK = "Sample"
 
+const sampleItem: EntryItem = {
+    id: "1",
+    authorID: AUTHOR_ID_MOCK,
+    title: "Sample",
+    description: "sample description",
+    difficulty: 0,
+    url: "sample url",
+    tags: ["sample tag"],
+    slug: "sample slug",
+    status: "public",
+    createdAt: "now",
+    lastModified: "now"
+}
+
+const sampleHeader: EntryHeader = {
+    difficulty: sampleItem.difficulty,
+    id: sampleItem.id,
+    slug: sampleItem.slug,
+    title: sampleItem.title,
+    tags: sampleItem.tags,
+    authorID: sampleItem.authorID,
+    ...(sampleItem.createdAt && { createdAt: sampleItem.createdAt }),
+    ...(sampleItem.lastModified && { lastModified: sampleItem.lastModified })
+}
+
 const initialDB = {
     "page_detail": {
         count: 0,
@@ -101,30 +126,7 @@ describe("List Model", () => {
 
     it("adds items properly", async () => {
         expect.assertions(1)
-        const newItem: EntryItem = {
-            id: "1",
-            authorID: AUTHOR_ID_MOCK,
-            title: "Sample",
-            description: "sample description",
-            difficulty: 0,
-            url: "sample url",
-            tags: ["sample tag"],
-            slug: "sample slug",
-            status: "public",
-            createdAt: "now",
-            lastModified: "now"
-        }
-        const newHeader: EntryHeader = {
-            difficulty: newItem.difficulty,
-            id: newItem.id,
-            slug: newItem.slug,
-            title: newItem.title,
-            tags: newItem.tags,
-            authorID: newItem.authorID,
-            ...(newItem.createdAt && { createdAt: newItem.createdAt }),
-            ...(newItem.lastModified && { lastModified: newItem.lastModified })
-        }
-        await ListModel.addItem(newItem)
+        await ListModel.addItem(sampleItem)
         expect(getDB()).toStrictEqual({
             "page_detail": {
                 count: 1,
@@ -132,16 +134,16 @@ describe("List Model", () => {
             },
             "pages": {
                 "1": {
-                    0: newHeader
+                    0: sampleHeader
                 }
             },
             "posts": {
-                "1": newItem
+                "1": sampleItem
             },
             "user": {
                 "Sample": {
                     "posts": {
-                        "1": newHeader
+                        "1": sampleHeader
                     },
                     "userDetail": {
                         "cf": "tourist",
@@ -149,6 +151,19 @@ describe("List Model", () => {
                     }
                 }
             }
+        })
+    })
+
+    it("uses pagination properly", async () => {
+        expect.assertions(1)
+        cleanModule({...initialDB, page_detail: {
+            count: 100,
+            curPage: 1
+        }})
+        await ListModel.addItem(sampleItem)
+        expect(getDB().page_detail).toStrictEqual({
+            count: 1,
+            curPage: 2
         })
     })
 })
