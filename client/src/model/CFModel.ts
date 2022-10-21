@@ -79,7 +79,8 @@ class CFModel {
                     slug: `CF${submission.contestId}${submission.problem.index}`,
                     tags: submission.problem.tags.map(tag => tag),
                     title: submission.problem.name,
-                    status: "draft"
+                    status: "draft",
+                    tagOnly: true
                 }
 
                 data.push(newEntry)

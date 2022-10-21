@@ -22,7 +22,8 @@ export interface EntryHeader {
     createdAt?: string,
     slug: string,
     tags: Tag[],
-    title: string
+    title: string,
+    tagOnly?: boolean
 }
 
 export interface ListState {

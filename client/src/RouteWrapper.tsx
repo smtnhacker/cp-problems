@@ -68,7 +68,10 @@ const RouteWrapper = () => {
               <Route path="/dashboard" element={<DashboardPage />}></Route>
               <Route path="/problems" element={<EditPage />}>
                 <Route index element={<List />} />
-                <Route path="new" element={<NewProblemPage />} />
+                <Route path="new">
+                  <Route index element={<NewProblemPage />} />
+                  <Route path=":headerID" element={<NewProblemPage useCache />} />
+                </Route>
                 <Route path=":problemID" element={<ProblemView />} />
               </Route>
               <Route path="/profile" element={<ProfilePage />}>

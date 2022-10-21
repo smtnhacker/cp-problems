@@ -1,11 +1,19 @@
 import { FormEventHandler, useState } from "react";
+import { EntryHeader } from "../types/list";
 
 interface ListFormProps {
-  onSubmit: FormEventHandler;
+  onSubmit: FormEventHandler,
+  initialValues?: EntryHeader
 }
 
 const ListForm = (props: ListFormProps) => {
   const [dif, setDif] = useState<number>(800);
+  const defaults = props.initialValues ? props.initialValues : {
+    slug: "",
+    title: "",
+    difficulty: 800,
+    tags: []
+  }
 
   return (
     <div className="container">
@@ -14,11 +22,11 @@ const ListForm = (props: ListFormProps) => {
           <label className="input-group-text" htmlFor="slug">
             Slug
           </label>
-          <input className="form-control" type="text" name="slug" />
+          <input className="form-control" type="text" name="slug" defaultValue={defaults.slug} />
           <label className="input-group-text" htmlFor="title">
             Title
           </label>
-          <input className="form-control" type="text" name="title" />
+          <input className="form-control" type="text" name="title" defaultValue={defaults.title} />
         </div>
         <div className="input-group mb-3">
           <label className="form-group" htmlFor="difficulty">
@@ -29,6 +37,7 @@ const ListForm = (props: ListFormProps) => {
             type="range"
             name="difficulty"
             value={dif}
+            defaultValue={defaults.difficulty}
             onChange={e => setDif(parseInt(e.target.value))}
             min={0}
             max={3500}
@@ -45,7 +54,14 @@ const ListForm = (props: ListFormProps) => {
           <label className="input-group-text" htmlFor="tags">
             Tags
           </label>
-          <input className="form-control" type="text" name="tags" />
+          <input 
+            className="form-control" 
+            type="text" 
+            name="tags" 
+            defaultValue={defaults.tags.reduce((total, cur) => {
+              return total + ", " + cur
+            }, "")} 
+          />
         </div>
         <input className="btn btn-primary" type="submit" value="submit" />
       </form>

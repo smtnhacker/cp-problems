@@ -268,6 +268,27 @@ class ListModel {
             }
         }
     }
+
+    async deleteHeader(entry: EntryHeader): Promise<BaseModelResponse> {
+        const { authorID, id } = entry;
+
+        if (HAS_FIREBASE) {
+            try {
+                // delete from user post
+                const itemRef = ref(db, `user/${authorID}/posts/${id}`)
+                await remove(itemRef)
+
+                return { error: null, data: entry }
+            } catch (err) {
+                return { error: err, data: null }
+            }
+        } else {
+            return {
+                error: "no supported database used",
+                data: null
+            }
+        }
+    }
 }
 
 export default new ListModel(API_ENDPOINT)
