@@ -55,7 +55,7 @@ const ProfilePage = () => {
 
     return (
         <>
-            <form onSubmit={handleSubmit}>
+            <form className="p-4" onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label htmlFor="displayName">Display Name:</label>
                     <input type="text" name="displayName" className="form-control" value={dName} onChange={e => setDName(e.target.value)} />
@@ -68,9 +68,13 @@ const ProfilePage = () => {
                 </div>
                 <input type="submit" className="btn btn-primary" value="Update Profile" />
             </form>
-            <div className="mb-3">
-                <button className="btn btn-outline-secondary" onClick={() => handleSyncData()} >Sync Codeforces Submissions</button>
-                <button className="btn btn-outline-secondary" onClick={() => handleDeleteDrafts()} >Delete Drafts</button>
+            <div className="m-4">
+                <div className="row mb-2">
+                    <button className="btn btn-outline-dark" onClick={() => handleSyncData()} >Sync Codeforces Submissions</button>
+                </div>
+                <div className="row mb-2">
+                    <button className="btn btn-outline-danger" onClick={() => handleDeleteDrafts()} >Delete Drafts</button>
+                </div>
             </div>
         </>
     )
