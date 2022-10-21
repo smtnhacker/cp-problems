@@ -22,6 +22,7 @@ const ProblemView = (props: ProblemViewProps) => {
     const authorID = auth.id
     const { problemID } = useParams()
     const [currentEntry, setCurrentEntry] = useState<EntryItem>()
+    const [error, setError] = useState()
 
     useEffect(() => {
         const getCurrent = async () => {
@@ -31,6 +32,7 @@ const ProblemView = (props: ProblemViewProps) => {
                 setCurrentEntry(data);
             } catch (err) {
                 console.log(err)
+                setError(err)
             }
         }
         if (problemID) {
@@ -78,7 +80,9 @@ const ProblemView = (props: ProblemViewProps) => {
         return <h1>Missing Problem ID...</h1>
     } else if (!currentEntry && !props.readonly) {
         return <h1>Invalid Problem ID</h1>
-    } 
+    } else if (error) {
+        return <h1>{error} <span className="text-muted">(may be deleted)</span></h1>
+    }
 
     return (
         <div className="container px-4">
