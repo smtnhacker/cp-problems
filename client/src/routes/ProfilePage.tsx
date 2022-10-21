@@ -41,7 +41,7 @@ const ProfilePage = () => {
     const handleSyncData = async () => {
         const data = await CFModel.fetchUserSubmissions(cf, authorID);
         console.log(data)
-        await ListModel.addHeaders((data.data as unknown) as EntryHeader, authorID)
+        await ListModel.addHeaders(data.data, authorID)
         alert('Done! Please refresh the page to see changes in the dashboard')
     }
 

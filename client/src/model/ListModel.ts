@@ -146,15 +146,18 @@ class ListModel {
         }
     }
 
-    async addHeaders(newHeaders: EntryHeader, authorID: string) {
+    async addHeaders(newHeaders: EntryHeader[], authorID: string) {
         if (HAS_FIREBASE) {
             // get current headers
             const userRef = ref(db, 'user');
             const rawData = (await get(child(userRef, `${authorID}/posts`))).val() ?? {};
+            const newHeadersObj: { [id: string]: EntryHeader } = newHeaders.reduce((total, cur) => {
+                return {...total, [cur.id]: cur }
+            }, {})
             // updated the user db
             const updatedHeaders = {
                 ...rawData,
-                ...newHeaders
+                ...newHeadersObj
             }
             const userItemsRef = ref(db, `user/${authorID}/posts`);
             set(userItemsRef, updatedHeaders);
