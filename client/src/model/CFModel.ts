@@ -1,4 +1,4 @@
-import { EntryHeader } from "../features/types/list"
+import { EntryHeader, Tag } from "../features/types/list"
 import getBestTag from "../util/getBestTag"
 
 interface CFProblem {
@@ -51,6 +51,8 @@ interface ModelSubmissionListResponse {
 
 class CFModel {
     async fetchUserSubmissions(cfHandle: string, authorID: string): Promise<ModelSubmissionListResponse> {
+        const tagCache: { [tag: string]: Tag } = {}
+
         console.log("Fetching...")
         try {
             const response: Response = await fetch(
@@ -77,7 +79,14 @@ class CFModel {
                     authorID: authorID,
                     difficulty: submission.problem.rating || 1900,
                     slug: `CF${submission.contestId}${submission.problem.index}`,
-                    tags: submission.problem.tags.map(tag => tag),
+                    tags: submission.problem.tags.map(tag => {
+                        if (tag in tagCache) {
+                            return tagCache[tag]
+                        }
+                        const newTag = getBestTag(tag)
+                        tagCache[tag] = newTag
+                        return newTag
+                    }),
                     title: submission.problem.name,
                     status: "draft",
                     tagOnly: true
