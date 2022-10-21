@@ -53,11 +53,10 @@ class CFModel {
     async fetchUserSubmissions(cfHandle: string, authorID: string): Promise<ModelSubmissionListResponse> {
         const tagCache: { [tag: string]: Tag } = {}
 
-        console.log("Fetching...")
         try {
             const response: Response = await fetch(
                 `https://codeforces.com/api/user.status?handle=${cfHandle}`)
-
+                
             if (!response.ok) {
                 return { error: response.statusText, data: null }
             }
@@ -94,7 +93,6 @@ class CFModel {
 
                 data.push(newEntry)
             })
-            console.table(data.slice(0,10))
             
             const noDuplicates: Array<EntryHeader & { status: string }> = []
             const sortedData = data.sort((a, b) => {
@@ -105,7 +103,8 @@ class CFModel {
                     noDuplicates.push(cur)
                 }
             })
-
+            
+            console.table(noDuplicates.slice(0,10))
             return { error: null, data: noDuplicates }
             
 
