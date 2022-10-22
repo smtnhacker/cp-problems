@@ -43,13 +43,15 @@ const ProfilePage = () => {
 
     const handleSyncData = async () => {
         const { error, data } = await CFModel.fetchUserSubmissions(cf, authorID);
-        console.log(error)
+        
         if (error) {
             return alert(error)
         }
+
         const noDuplicates = data.filter(entry => {
             return !(entry.slug in existingSlugs)
         })
+
         await ListModel.addHeaders(noDuplicates, authorID)
         alert('Done! Please refresh the page to see changes in the dashboard')
     }
