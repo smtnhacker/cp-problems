@@ -306,7 +306,7 @@ class ListModel {
                 localStorage.setItem(`cp-fave-user-items`, JSON.stringify(cache))
 
             } catch (err) {
-                console.error("Cache missing on addItem")
+                console.warn("Do not delete cache")
             }
 
 
@@ -340,15 +340,12 @@ class ListModel {
                 // delete from cache
                 try {
                     const cache = JSON.parse(localStorage.getItem('cp-fave-user-items'))
-    
                     if ((new Date()).toDateString() === cache.savedAt && sha512(authorID) === cache.key) {
                         cache.data = cache.data.filter(entry => entry.id !== id)
                     }
-    
                     localStorage.setItem(`cp-fave-user-items`, JSON.stringify(cache))
-    
                 } catch (err) {
-                    console.error("Cache missing on addItem")
+                    console.warn("Do not delete the cache")
                 }
 
                 return { error: null, data: entry }
@@ -367,6 +364,17 @@ class ListModel {
                 // delete from user post
                 const itemRef = ref(db, `user/${authorID}/posts/${id}`)
                 await remove(itemRef)
+
+                // delete from cache
+                try {
+                    const cache = JSON.parse(localStorage.getItem('cp-fave-user-items'))
+                    if ((new Date()).toDateString() === cache.savedAt && sha512(authorID) === cache.key) {
+                        cache.data = cache.data.filter(entry => entry.id !== id)
+                    }
+                    localStorage.setItem(`cp-fave-user-items`, JSON.stringify(cache))
+                } catch (err) {
+                    console.warn("Do not delete the cache")
+                }
 
                 return { error: null, data: entry }
             } catch (err) {

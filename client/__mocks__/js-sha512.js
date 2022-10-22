@@ -1,0 +1,1 @@
+export const sha512 = jest.fn((value) => value)
