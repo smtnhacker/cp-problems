@@ -71,18 +71,38 @@ const ProblemForm = (props: ProblemFormProps) => {
       <>
         <form onSubmit={handleSubmit}>
           <input type="text" name="authorID" value={props.authorID} hidden readOnly />
-          <div className="mb-3 input-group row">
-            <label className="input-group-text" htmlFor="slug">
-              Slug
-            </label>
-            <input className="form-control" type="text" name="slug" value={title} onChange={e => setSlug(e.target.value)} />
-            <label className="input-group-text" htmlFor="title">
-              Title
-            </label>
-            <input className="form-control" type="text" name="title" value={title} onChange={e => setTitle(e.target.value)} />
+          <div className="mb-3 row g-1">
+            <div className="col-2">
+              <div className="input-group">
+                <label className="input-group-text" htmlFor="slug">
+                  Slug
+                </label>
+                <input 
+                  className="form-control" 
+                  type="text" 
+                  name="slug" value={slug} 
+                  maxLength={14}
+                  onChange={e => setSlug(e.target.value)} 
+                />
+              </div>
+            </div>
+            <div className="col">
+              <div className="input-group">
+                <label className="input-group-text" htmlFor="title">
+                  Title
+                </label>
+                <input 
+                  className="form-control" 
+                  type="text" 
+                  name="title" value={title} 
+                  onChange={e => setTitle(e.target.value)} 
+                />
+              </div>
+            </div>
+            <div className="form-text">For example: CF104A</div>
           </div>
           <div className="input-group mb-3">
-            <label className="input-group-text" htmlFor="difficulty">
+            <label className="form-group" htmlFor="difficulty">
               Difficulty: {dif}
             </label>
             <input
@@ -90,11 +110,12 @@ const ProblemForm = (props: ProblemFormProps) => {
               type="range"
               name="difficulty"
               value={dif}
-              onChange={(e) => setDif(parseInt(e.target.value))}
+              onChange={e => setDif(parseInt(e.target.value))}
               min={0}
               max={3500}
               step={100}
             />
+            <div className="form-text">Use CodeForces standards</div>
           </div>
           <div className="mb-3 input-group">
             <label className="input-group-text" htmlFor="url">
@@ -102,12 +123,20 @@ const ProblemForm = (props: ProblemFormProps) => {
             </label>
             <input className="form-control" type="text" name="url" value={url} onChange={e => setUrl(e.target.value)} />
           </div>
-          <div className="mb-3 input-group">
-            <label className="input-group-text" htmlFor="tags">
-              Tags
-            </label>
-            <input className="form-control" type="text" name="tags" value={tags} onChange={e => setTags(e.target.value)} />
-          </div>
+          <div className="mb-3">
+            <div className="input-group">
+              <label className="input-group-text" htmlFor="tags">
+                Tags
+              </label>
+              <input 
+                className="form-control" 
+                type="text" 
+                name="tags" value={tags}
+                onChange={e => setTags(e.target.value)} 
+              />
+            </div>
+            <div className="form-text">This will be compared to CodeForces standard tags and modified accordingly</div>
+          </div> 
           <div className="input-group mb-3">
             <label className="input-group-text" hidden htmlFor="description">
               Description

@@ -18,15 +18,24 @@ const ListForm = (props: ListFormProps) => {
   return (
     <div className="container">
       <form onSubmit={props.onSubmit}>
-        <div className="mb-3 input-group">
-          <label className="input-group-text" htmlFor="slug">
-            Slug
-          </label>
-          <input className="form-control" type="text" name="slug" defaultValue={defaults.slug} />
-          <label className="input-group-text" htmlFor="title">
-            Title
-          </label>
-          <input className="form-control" type="text" name="title" defaultValue={defaults.title} />
+        <div className="mb-3 row g-1">
+          <div className="col-2">
+            <div className="input-group">
+              <label className="input-group-text" htmlFor="slug">
+                Slug
+              </label>
+              <input className="form-control" type="text" name="slug" defaultValue={defaults.slug} maxLength={14} />
+            </div>
+          </div>
+          <div className="col">
+            <div className="input-group">
+              <label className="input-group-text" htmlFor="title">
+                Title
+              </label>
+              <input className="form-control" type="text" name="title" defaultValue={defaults.title} />
+            </div>
+          </div>
+          <div className="form-text">For example: CF104A</div>
         </div>
         <div className="input-group mb-3">
           <label className="form-group" htmlFor="difficulty">
@@ -43,6 +52,7 @@ const ListForm = (props: ListFormProps) => {
             max={3500}
             step={100}
           />
+          <div className="form-text">Use CodeForces standards</div>
         </div>
         <div className="mb-3 input-group">
           <label className="input-group-text" htmlFor="url">
@@ -50,20 +60,23 @@ const ListForm = (props: ListFormProps) => {
           </label>
           <input className="form-control" type="text" name="url" />
         </div>
-        <div className="mb-3 input-group">
-          <label className="input-group-text" htmlFor="tags">
-            Tags
-          </label>
-          <input 
-            className="form-control" 
-            type="text" 
-            name="tags" 
-            defaultValue={defaults.tags.reduce((total, cur) => {
-              return total + ", " + cur
-            }, "")} 
-          />
+        <div className="mb-3">
+          <div className="input-group">
+            <label className="input-group-text" htmlFor="tags">
+              Tags
+            </label>
+            <input 
+              className="form-control" 
+              type="text" 
+              name="tags" 
+              defaultValue={defaults.tags.reduce((total, cur) => {
+                return total + ", " + cur
+              }, "")} 
+            />
+          </div>
+          <div className="form-text">This will be compared to CodeForces standard tags and modified accordingly</div>
         </div>
-        <input className="btn btn-primary" type="submit" value="submit" />
+        <input className="btn btn-primary" type="submit" value="Submit" />
       </form>
     </div>
   );
