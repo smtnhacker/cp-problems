@@ -76,7 +76,7 @@ export const getSlugs = (list: EntryHeader[] | EntryItem[]): { [slug: string]: b
 const Dashboard = (props: DashboardProps) => {
     const [loading, setLoading] = useState(false);
     const [suggests, setSuggests] = useState<Problem[]>([])
-    const [suggestNotif, setSuggestNotif] = useState(false)
+    const [suggestNotif, setSuggestNotif] = useState("")
     const [tags, setTags] = useState<TagScore>({})
     const existingSlugs = useMemo<{[slug: string]: boolean}>(() => getSlugs(props.list), [props.list])
 
@@ -93,10 +93,16 @@ const Dashboard = (props: DashboardProps) => {
     const handleTagSubmit = async (e) => {
         e.preventDefault()
 
+        setSuggestNotif("loading...")
         const suggestTags: Tag[] = parseTags(e.target.suggest_tags.value)
         const { error, data } = await CFModel.fetchProblemsByTag(suggestTags)
 
         if (error) {
+            if (typeof error === "string") {
+                setSuggestNotif(error)
+            } else {
+                setSuggestNotif(error.message)
+            }
             return console.error(error)
         } 
 
@@ -110,9 +116,10 @@ const Dashboard = (props: DashboardProps) => {
 
         if (shownSuggestions.length) {
             setSuggests(shownSuggestions)
-            setSuggestNotif(false)
+            setSuggestNotif("")
         } else {
-            setSuggestNotif(true)
+            setSuggestNotif("These tags might be too hard (or too easy) for your current level!")
+            setSuggests([])
         }
     }
 
@@ -150,7 +157,7 @@ const Dashboard = (props: DashboardProps) => {
                 </form>
                 <ul className='list-group'>
                     {suggestNotif && 
-                    <span className="text-muted">These tags might be too hard (or too easy) for your current level!</span>
+                    <span className="text-muted">{suggestNotif}</span>
                     }
                     {suggests.map(prob => (
                         <li key={prob.slug} className="list-group-item">
