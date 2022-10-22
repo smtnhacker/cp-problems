@@ -2,7 +2,7 @@ import { EntryHeader, Tag } from "../features/types/list"
 import getBestTag from "../util/getBestTag"
 
 interface CFProblem {
-    contestID?: number,
+    contestId?: number,
     problemsetName?: string,
     index: string,
     name: string,
@@ -44,9 +44,26 @@ interface CFSubmission {
     points?: number
 }
 
+interface CFProblemStat {
+    contestId: number,
+    index: string,
+    solvedCount: number
+}
+
+export interface Problem extends CFProblem {
+    solvedCount: number,
+    slug: string,
+    url: string
+}
+
 interface ModelSubmissionListResponse {
     error: any,
     data: Array<EntryHeader & { status: string }> 
+}
+
+interface ModelProblemListResponse {
+    error: any,
+    data: Problem[]
 }
 
 class CFModel {
@@ -108,6 +125,73 @@ class CFModel {
             console.table(noDuplicates.slice(0,10))
             return { error: null, data: noDuplicates }
             
+
+        } catch (err) {
+            return { error: err, data: [] }
+        }
+    }
+
+    async fetchProblemsByTag(tags: Tag[]): Promise<ModelProblemListResponse> {
+        const convertToCF = (tag: Tag): string => {
+            if (tag === 'DFS') {
+                return 'dfs and similar'
+            } else if (tag === 'DP') {
+                return 'dp'
+            } else if (tag === 'DSU') {
+                return 'dsu'
+            } else if (tag === '2-SAT') {
+                return '2-sat'
+            } else if (tag === 'Meet-In-The-Middle') {
+                return 'meet-in-the-middle'
+            } else {
+                return tag.toLocaleLowerCase()
+            }
+        }
+
+        const tagParam = tags
+                        .filter(tag => tag.length > 0)
+                        .map(tag => convertToCF(tag))
+                        .reduce((total, cur) => {
+                            return total.length ? total + ";" + cur : cur
+                        }, "")
+        const param = tagParam.length ? `?tags=${tagParam}` : "";
+
+        try {
+            const response: Response = await fetch(
+                `https://codeforces.com/api/problemset.problems${param}`
+            )
+
+            if (!response.ok) {
+                const { comment } = await response.json()
+                return { error: comment, data: null }
+            }
+            
+            const rawData: { status: string, result } = await response.json()
+            if (rawData.status !== "OK") {
+                return { error: "something went wrong", data: null }
+            }
+
+            const data: Problem[] = []
+            const { problems, problemStatistics } = rawData.result
+
+            for(const index in problems) {
+                const prob: CFProblem = problems[index]
+                const stat: CFProblemStat = problemStatistics[index]
+                
+                if (prob.contestId !== stat.contestId && prob.index !== stat.index) {
+                    throw Error("statistics don't match with the problems")
+                }
+
+                data.push({
+                    ...prob, 
+                    ...stat, 
+                    slug: `CF${prob.contestId}${prob.index}`,
+                    url: `https://codeforces.com/contest/${prob.contestId}/problem/${prob.index}`
+                })
+            }
+
+            console.table(data.slice(0, 15))
+            return { error: null, data: data }
 
         } catch (err) {
             return { error: err, data: [] }

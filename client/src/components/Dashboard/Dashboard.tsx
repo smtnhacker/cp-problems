@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react'
-import { EntryHeader } from '../../features/types/list'
+import { useEffect, useState, useMemo } from 'react'
+import { EntryHeader, Tag } from '../../features/types/list'
+import CFModel, { Problem } from '../../model/CFModel'
+import getBestSuggestionProbs from '../../util/getBestSuggestionProbs'
+import getBestTag from '../../util/getBestTag'
+import removeDuplicates from '../../util/removeDuplicates'
 import ProgressBar from './ProgressBar'
 
 interface DashboardProps {
@@ -46,10 +50,14 @@ const normalizeTags = (list: TagDiffListType): TagScore => {
 const Dashboard = (props: DashboardProps) => {
     const [loading, setLoading] = useState(false);
     const [tags, setTags] = useState<TagScore>({})
+    const [suggests, setSuggests] = useState<Problem[]>([])
+    const existingSlugs = useMemo<{[slug: string]: boolean}>(() => props.list.reduce((total, cur): {[slug: string]: boolean} => {
+        return { ...total, [cur.slug]: true }
+    }, {}), [props.list])
 
     useEffect(() => {
         setLoading(true);
-        console.log(props.list)
+        // console.log(props.list)
         const tagDiffList: TagDifficulty[] = props.list.reduce((total: TagDifficulty[], cur: EntryHeader) => {
             if (!cur.tags || cur.tags[0] === "") {
                 return total
@@ -70,24 +78,77 @@ const Dashboard = (props: DashboardProps) => {
         setLoading(false);
     }, [])
 
+    const handleTagSubmit = async (e) => {
+        e.preventDefault()
+        const suggestTags: Tag[] = removeDuplicates(
+                            e.target.suggest_tags.value.split(",")
+                            .map((tag: string) => tag.trim())
+                            .map((tag: string) => getBestTag(tag))
+                            .filter((tag: string) => tag.length > 0)
+                        )
+
+        const { error, data } = await CFModel.fetchProblemsByTag(suggestTags)
+        if (error) {
+            console.error(error)
+        } else {
+            const ratingLevel: number = Object.keys(tags).reduce((total, cur) => {
+                if (!suggestTags.includes(cur)) {
+                    return total
+                }
+                return Math.max(total, tags[cur])
+            }, 0)
+            console.log("Score:", ratingLevel)
+            const allSuggests = getBestSuggestionProbs(data, ratingLevel)
+            const noDuplicates = allSuggests.filter(prob => !(prob.slug in existingSlugs))
+            const sorted = noDuplicates.slice().sort((a, b) => b.solvedCount - a.solvedCount)
+            // allSuggests.forEach(prob => {
+            //     if (prob.slug in existingSlugs) {
+            //         console.log("EXISTING:", prob.slug)
+            //     }
+            // })
+            setSuggests(sorted)
+        }
+    }
+
     return (
-        <div>
-            <h2>Skill Set</h2>
-            <ul className="list-group">
-                {loading ? 
-                <p>Loading...</p>
-                :
-                Object.keys(tags).sort((a, b) => tags[b] - tags[a]).map(tag => (
-                    <li key={tag} className="list-group-item">
-                        <div className="row">
-                            <div className="col-2">{tag}</div>
-                            <div className="col-10">
-                                <ProgressBar min={0} max={4000} width={tags[tag] * 100 / 4000} text={tags[tag].toFixed()} />
+        <div className='row'>
+            <div className="col-7">
+                <h2>Skill Set</h2>
+                <ul className="list-group">
+                    {loading ? 
+                    <p>Loading...</p>
+                    :
+                    Object.keys(tags).sort((a, b) => tags[b] - tags[a]).map(tag => (
+                        <li key={tag} className="list-group-item">
+                            <div className="row">
+                                <div className="col-2">{tag}</div>
+                                <div className="col-10">
+                                    <ProgressBar min={0} max={4000} width={tags[tag] * 100 / 4000} text={tags[tag].toFixed()} />
+                                </div>
                             </div>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div className="col-5">
+                <h2>Suggested Problems</h2>
+                <form onSubmit={handleTagSubmit}>
+                    <div className="input-group m-3">
+                        <label htmlFor="suggest_tags" className="input-group-text">Tags</label>
+                        <input type="text" name="suggest_tags" className="form-control" />
+                        <input type="submit" value="Give me problems" className="btn btn-primary" />
+                    </div>
+                </form>
+                <ul className='list-group'>
+                    {suggests.slice(0,10).map(prob => (
+                        <li key={prob.slug} className="list-group-item">
+                            <a href={prob.url ?? "#"} target="_blank" rel="noreferrer noopener" className="nav-link">
+                                <strong>{prob.slug}</strong> {prob.name} <span className='text-muted'>({prob.rating} / {prob.solvedCount})</span>
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </div>
     )
 }

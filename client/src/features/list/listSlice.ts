@@ -70,7 +70,7 @@ export const fetchItems = createAsyncThunk(
     try {
       const response = await model.fetchAllItems(amount);
       const data = response.data
-      console.table(data);
+      // console.table(data);
       return data
     } catch (err: any) {
       console.log(err);
@@ -84,7 +84,7 @@ export const fetchUserItems = createAsyncThunk(
     try {
       const response = await model.fetchUserItems(authorID);
       const data = response.data
-      console.log(data);
+      // console.log(data);
       return data
     } catch (err: any) {
       console.log(err);
