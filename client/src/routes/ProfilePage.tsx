@@ -1,15 +1,20 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { useAppSelector } from "../app/hooks"
 import { selectAuth } from "../features/auth/authSlice"
 import userModel from "../model/UserModel"
 import CFModel from "../model/CFModel"
 import ListModel from "../model/ListModel"
 import { EntryHeader } from "../features/types/list"
+import { selectList } from "../features/list/listSlice"
 
 const ProfilePage = () => {
     const { id: authorID } = useAppSelector(selectAuth)
     const [dName, setDName] = useState<string>('')
     const [cf, setCF] = useState<string>('')
+    const list = useAppSelector(selectList)
+    const existingSlugs = useMemo<{[slug: string]: boolean}>(() => list.reduce((total, cur): {[slug: string]: boolean} => {
+        return { ...total, [cur.slug]: true }
+    }, {}), [list])
 
     useEffect(() => {
         const getDetails = async () => {
@@ -44,7 +49,10 @@ const ProfilePage = () => {
         if (error) {
             return alert(error)
         }
-        await ListModel.addHeaders(data, authorID)
+        const noDuplicates = data.filter(entry => {
+            return !(entry.slug in existingSlugs)
+        })
+        await ListModel.addHeaders(noDuplicates, authorID)
         alert('Done! Please refresh the page to see changes in the dashboard')
     }
 
