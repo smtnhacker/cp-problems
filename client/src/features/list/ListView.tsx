@@ -20,7 +20,7 @@ const ListView = (props: ListViewProps) => {
             </div>
             <div className="col">
                 <Link className="nav-link" to={props.genLink(entry.id)} onClick={(e) => props.onClick(entry)}>
-                  <span>{entry.slug} {entry.title}</span> <span className="text-muted">({entry.difficulty})</span>
+                  <span><strong>{entry.slug}</strong> {entry.title}</span> <span className="text-muted">({entry.difficulty})</span>
                 </Link>
             </div>
           </div>

@@ -16,10 +16,12 @@ export const Element = ({ attributes, children, element, viewOnly }) => {
     case 'math-block':
       return (
         <>
-          <span hidden={viewOnly}>
-            $$
-            {children}
-            $$
+          <span className='text-muted' hidden={viewOnly}>
+            <code>
+              $$
+              {children}
+              $$
+            </code>
           </span>
           <BlockMath>{element.children[0].text}</BlockMath>
         </>

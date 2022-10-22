@@ -45,7 +45,7 @@ const PostsView = () => {
                 return (
                 <li className="list-group-item" key={entry.id}>
                     <Link className="nav-link" to={`/posts/${entry.id || '404'}`}>
-                        {entry.title} by {authorCache[entry.authorID]}
+                        <strong>{entry.slug}</strong> {entry.title} by {authorCache[entry.authorID]}
                         <span className="text-muted"> {convertToReadableDate(entry.lastModified ?? entry.createdAt)}</span>
                     </Link>
                 </li>
