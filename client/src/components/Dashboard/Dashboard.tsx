@@ -76,6 +76,7 @@ export const getSlugs = (list: EntryHeader[] | EntryItem[]): { [slug: string]: b
 const Dashboard = (props: DashboardProps) => {
     const [loading, setLoading] = useState(false);
     const [suggests, setSuggests] = useState<Problem[]>([])
+    const [suggestNotif, setSuggestNotif] = useState(false)
     const [tags, setTags] = useState<TagScore>({})
     const existingSlugs = useMemo<{[slug: string]: boolean}>(() => getSlugs(props.list), [props.list])
 
@@ -107,7 +108,12 @@ const Dashboard = (props: DashboardProps) => {
                                     .sort((a, b) => b.solvedCount - a.solvedCount)
                                     .slice(0, 10)
 
-        setSuggests(shownSuggestions)
+        if (shownSuggestions.length) {
+            setSuggests(shownSuggestions)
+            setSuggestNotif(false)
+        } else {
+            setSuggestNotif(true)
+        }
     }
 
     return (
@@ -143,6 +149,9 @@ const Dashboard = (props: DashboardProps) => {
                     </div>
                 </form>
                 <ul className='list-group'>
+                    {suggestNotif && 
+                    <span className="text-muted">These tags might be too hard (or too easy) for your current level!</span>
+                    }
                     {suggests.map(prob => (
                         <li key={prob.slug} className="list-group-item">
                             <a href={prob.url ?? "#"} target="_blank" rel="noreferrer noopener" className="nav-link">
