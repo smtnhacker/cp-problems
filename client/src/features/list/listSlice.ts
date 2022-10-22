@@ -2,11 +2,13 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState, AppThunk } from "../../app/store";
 import model from "../../model/ListModel";
+import { TagScore } from "../../util/tagScoreReducers";
 import { EntryHeader, EntryItem, ListState } from "../types/list";
 
 const initialState: ListState = {
   value: [],
   all: [],
+  tagScore: {},
   status: 'idle'
 };
 
@@ -113,6 +115,9 @@ export const listSlice = createSlice({
     // addItemSynch: (state: ListState, action: PayloadAction<EntryItem>) => {
     //   state.value = [action.payload, ...state.value]
     // },
+    setTagScores: (state: ListState, action: PayloadAction<TagScore>) => {
+      state.tagScore = { ...action.payload }
+    }
   },
   extraReducers: builder => {
     builder
@@ -204,9 +209,15 @@ export const listSlice = createSlice({
   }
 });
 
+export const uploadTagScores = (payload: TagScore): AppThunk =>(dispatch, getState) => {
+    console.log("UPLOADING", payload)
+    dispatch(listSlice.actions.setTagScores(payload))
+  };
+
 export const selectList = (state: RootState) => state.list.value;
 export const selectPosts = (state: RootState) => state.list.all;
 export const selectStatus = (state: RootState) => state.list.status;
+export const selectTagScores = (state: RootState) => state.list.tagScore
 
 export const getPost = async (id: string): Promise<EntryItem> => {
   const { error, errorCode, data} = await model.fetchPost(id);

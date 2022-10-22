@@ -1,61 +1,15 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 
 import { EntryHeader, EntryItem, Tag } from '../../features/types/list'
 import CFModel, { Problem } from '../../model/CFModel'
 import getBestSuggestionProbs from '../../util/getBestSuggestionProbs'
-import normalizeList from '../../util/normalizeList'
 import parseTags from '../../util/parseTags'
+import { TagScore } from "../../util/tagScoreReducers";
 import ProgressBar from './ProgressBar'
 
 interface DashboardProps {
-    list: EntryHeader[]
-}
-
-export interface TagDifficulty {
-    tag: string,
-    difficulty: number
-}
-
-interface DifficultyArray extends Array<number>{}
-
-export interface TagDiffListType {
-    [tag: string]: DifficultyArray
-}
-
-export interface TagScore {
-    [key: string]: number
-}
-
-export const normalizeTags = (list: TagDiffListType): TagScore => {
-    let res: TagScore = {}
-    Object.keys(list).forEach(tag => {
-        res[tag] = normalizeList(list[tag])
-    })
-    return res
-}
-
-export const getTagDifficultiesReducer = (total: TagDifficulty[], cur: EntryHeader): TagDifficulty[] => {
-    if (!cur.tags || cur.tags[0] === "") {
-        return total
-    }
-    const flattened: TagDifficulty[] = cur.tags.map((tag): TagDifficulty => (
-        { tag: tag, difficulty: cur.difficulty}
-    ))
-    return total.concat(flattened)
-}
-
-export const getTagsByDifficultyReducer = (total: TagDiffListType, cur: TagDifficulty): TagDiffListType => {
-    if (cur.tag in total) {
-        return { 
-            ...total, 
-            [cur.tag]: [...total[cur.tag], cur.difficulty] 
-        }
-    } else {
-        return { 
-            ...total, 
-            [cur.tag]: [cur.difficulty] 
-        }
-    }
+    list: EntryHeader[],
+    tagScore: TagScore
 }
 
 export const ratingNormalization = (validTags: Tag[], ratings: TagScore): number => {
@@ -74,21 +28,9 @@ export const getSlugs = (list: EntryHeader[] | EntryItem[]): { [slug: string]: b
 }
 
 const Dashboard = (props: DashboardProps) => {
-    const [loading, setLoading] = useState(false);
     const [suggests, setSuggests] = useState<Problem[]>([])
     const [suggestNotif, setSuggestNotif] = useState("")
-    const [tags, setTags] = useState<TagScore>({})
     const existingSlugs = useMemo<{[slug: string]: boolean}>(() => getSlugs(props.list), [props.list])
-
-    useEffect(() => {
-        setLoading(true);
-
-        const tagDiffList: TagDifficulty[] = props.list.reduce(getTagDifficultiesReducer, [])
-        const tagDiffSorted: TagDiffListType = tagDiffList.reduce(getTagsByDifficultyReducer, {})
-        setTags(normalizeTags(tagDiffSorted))
-        
-        setLoading(false);
-    }, [props.list])
 
     const handleTagSubmit = async (e) => {
         e.preventDefault()
@@ -106,7 +48,7 @@ const Dashboard = (props: DashboardProps) => {
             return console.error(error)
         } 
 
-        const ratingLevel = ratingNormalization(suggestTags, tags)
+        const ratingLevel = ratingNormalization(suggestTags, props.tagScore)
         const allSuggests = getBestSuggestionProbs(data, ratingLevel)
 
         const shownSuggestions = allSuggests
@@ -127,19 +69,16 @@ const Dashboard = (props: DashboardProps) => {
         <div className='row'>
             <div className="col-7">
                 <h2>Skill Set</h2>
-                {!loading && Object.keys(tags).length === 0 &&
+                {Object.keys(props.tagScore).length === 0 &&
                 <span className="text-muted">Start solving and upload your progress to see your skill set!</span>
                 }
                 <ul className="list-group">
-                    {loading ? 
-                    <p>Loading...</p>
-                    :
-                    Object.keys(tags).sort((a, b) => tags[b] - tags[a]).map(tag => (
+                    {Object.keys(props.tagScore).sort((a, b) => props.tagScore[b] - props.tagScore[a]).map(tag => (
                         <li key={tag} className="list-group-item">
                             <div className="row">
                                 <div className="col-2">{tag}</div>
                                 <div className="col-10">
-                                    <ProgressBar min={0} max={4000} width={tags[tag] * 100 / 4000} text={tags[tag].toFixed()} />
+                                    <ProgressBar min={0} max={4000} width={props.tagScore[tag] * 100 / 4000} text={props.tagScore[tag].toFixed()} />
                                 </div>
                             </div>
                         </li>
@@ -153,6 +92,7 @@ const Dashboard = (props: DashboardProps) => {
                         <label htmlFor="suggest_tags" className="input-group-text">Tags</label>
                         <input type="text" name="suggest_tags" className="form-control" />
                         <input type="submit" value="Give me problems" className="btn btn-primary" />
+                        <div className="form-text">This will be compared to CodeForces standard tags and modified accordingly</div>
                     </div>
                 </form>
                 <ul className='list-group'>

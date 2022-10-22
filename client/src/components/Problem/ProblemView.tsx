@@ -3,7 +3,7 @@ import { useParams } from "react-router"
 import { IoPencilSharp } from "react-icons/io5"
 
 import { useAppDispatch, useAppSelector } from "../../app/hooks"
-import { getPost, selectList, selectPosts, updateItem } from "../../features/list/listSlice"
+import { getPost, updateItem } from "../../features/list/listSlice"
 import { selectAuth } from "../../features/auth/authSlice"
 import ProblemForm from "./ProblemForm"
 import RichBodyView from "../RichBody/RichBodyView/RichBodyView"

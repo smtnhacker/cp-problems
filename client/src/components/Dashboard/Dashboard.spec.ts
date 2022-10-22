@@ -2,9 +2,6 @@ import { EntryHeader } from "../../features/types/list"
 import {
     getSlugs,
     ratingNormalization,
-    normalizeTags,
-    TagDiffListType,
-    getTagDifficultiesReducer
 } from "./Dashboard"
 
 describe("get slugs function", () => {
@@ -53,23 +50,5 @@ describe("rating normalization function", () => {
         expect(ratingNormalization(["a", "b", "c"], {
             a: 100, b: 200, c: 300, d: 0
         })).toBeLessThanOrEqual(300)
-    })
-})
-
-describe("normalize tags function", () => {
-    it("does not crash", () => {
-        expect.assertions(1)
-        expect(normalizeTags({})).toBeDefined()
-    })
-
-    it("returns an object of numbers", () => {
-        const list = {
-            "a": [0, 10, 20],
-            "b": [20, 30, 40]
-        } as TagDiffListType
-        const res = normalizeTags(list)
-        Object.keys(res).forEach(key => {
-            expect(typeof res[key]).toBe("number")
-        })
     })
 })

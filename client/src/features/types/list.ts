@@ -1,3 +1,5 @@
+import { TagScore } from "../../util/tagScoreReducers"
+
 export type Tag = string
 
 export interface EntryItem {
@@ -29,5 +31,6 @@ export interface EntryHeader {
 export interface ListState {
     value: EntryHeader[],
     all: EntryHeader[],
+    tagScore: TagScore,
     status: 'idle' | 'loading' | 'failed'
 }
