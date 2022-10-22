@@ -69,9 +69,9 @@ const ListForm = (props: ListFormProps) => {
               className="form-control" 
               type="text" 
               name="tags" 
-              defaultValue={defaults.tags.reduce((total, cur) => {
+              defaultValue={defaults.tags?.reduce((total, cur) => {
                 return total + ", " + cur
-              }, "")} 
+              }, "") ?? ""} 
             />
           </div>
           <div className="form-text">This will be compared to CodeForces standard tags and modified accordingly</div>
