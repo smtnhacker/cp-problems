@@ -24,6 +24,8 @@ import {
   MdFormatAlignRight,
   MdFormatAlignJustify
 } from 'react-icons/md'
+import { InlineMath } from 'react-katex'
+import 'katex/dist/katex.min.css'
 
 import { Button, Icon, Toolbar, Leaf, Element } from '../components'
 
@@ -36,7 +38,7 @@ const HOTKEYS = {
   'mod+b': 'bold',
   'mod+i': 'italic',
   'mod+u': 'underline',
-  'mod+`': 'code',
+  'mod+`': 'code'
 }
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list']
@@ -63,7 +65,6 @@ const RichBodyEditor = (props: RichBodyEditorProps) => {
 
   return (
     <div className="container p-2 bg-light border" style={{ minHeight: "300px" }}>
-
       <Slate 
         editor={editor} 
         value={initialValue}
@@ -72,6 +73,7 @@ const RichBodyEditor = (props: RichBodyEditorProps) => {
             op => 'set_selection' !== op.type
           )
           if (isAstChange) {
+            console.log(JSON.stringify(value))
             props.onChange(JSON.stringify(value))
           }
         }}
@@ -81,6 +83,8 @@ const RichBodyEditor = (props: RichBodyEditorProps) => {
           <MarkButton format="italic" icon={<MdFormatItalic />} />
           <MarkButton format="underline" icon={<MdFormatUnderlined />} />
           <MarkButton format="code" icon={<MdCode />} />
+          {/* <BlockButton format="math-inline" icon={<>MATH INLINE</>} /> */}
+          <BlockButton format="math-block" icon={<>MATH BLOCK</>} />
           <BlockButton format="heading-one" icon={<MdLooksOne />} />
           <BlockButton format="heading-two" icon={<MdLooksTwo />} />
           <BlockButton format="block-quote" icon={<MdFormatQuote />} />

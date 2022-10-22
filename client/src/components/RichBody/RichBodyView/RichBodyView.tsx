@@ -13,13 +13,14 @@ interface RichBodyEditorProps {
 }
 
 const RichBodyView = (props: RichBodyEditorProps) => {  
-  const renderElement = useCallback(props => <Element {...props} />, [])
-  const renderLeaf = useCallback(props => <Leaf {...props} />, [])
+  const renderElement = useCallback(props => <Element {...props} viewOnly />, [])
+  const renderLeaf = useCallback(props => <Leaf {...props} viewOnly />, [])
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
 
   const getDescription = (raw: string) => {
     try {
       const content = JSON.parse(raw)
+      console.dir(content)
       return content
     } catch (err) {
       return [

@@ -1,15 +1,29 @@
 import React, { Ref, PropsWithChildren } from 'react'
 import ReactDOM from 'react-dom'
 import styled from 'styled-components'
+import { BlockMath, InlineMath } from 'react-katex'
+import 'katex/dist/katex.min.css'
+
 
 interface BaseProps {
     className?: string,
     [key: string]: unknown
 }
 
-export const Element = ({ attributes, children, element }) => {
+export const Element = ({ attributes, children, element, viewOnly }) => {
   const style = { textAlign: element.align }
   switch (element.type) {
+    case 'math-block':
+      return (
+        <>
+          <span hidden={viewOnly}>
+            $$
+            {children}
+            $$
+          </span>
+          <BlockMath>{element.children[0].text}</BlockMath>
+        </>
+      )
     case 'block-quote':
       return (
         <blockquote style={style} {...attributes}>
@@ -55,7 +69,7 @@ export const Element = ({ attributes, children, element }) => {
   }
 }
 
-export const Leaf = ({ attributes, children, leaf }) => {
+export const Leaf = ({ attributes, children, leaf, viewOnly }) => {
   if (leaf.bold) {
     children = <strong>{children}</strong>
   }
