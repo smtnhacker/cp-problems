@@ -115,7 +115,7 @@ const ProblemForm = (props: ProblemFormProps) => {
               max={3500}
               step={100}
             />
-            <div className="form-text">Use CodeForces standards</div>
+            <div className="form-text">Use CodeForces standards. Make sure to use ratings as close as to their actual difficulty to ensure that stats shown accurate and suggested problems are in your skill level!</div>
           </div>
           <div className="mb-3 input-group">
             <label className="input-group-text" htmlFor="url">

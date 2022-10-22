@@ -114,6 +114,9 @@ const Dashboard = (props: DashboardProps) => {
         <div className='row'>
             <div className="col-7">
                 <h2>Skill Set</h2>
+                {!loading && Object.keys(tags).length === 0 &&
+                <span className="text-muted">Start solving and upload your progress to see your skill set!</span>
+                }
                 <ul className="list-group">
                     {loading ? 
                     <p>Loading...</p>
