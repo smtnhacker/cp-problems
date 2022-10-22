@@ -15,7 +15,9 @@ export default function getBestTag(tag: string): string {
         return "DP";
     } else if (lowerTag.includes("mathematics")) {
         return "Math"
-    } else if (["other", "others", "misc", "special"].includes(lowerTag)) {
+    } else if (lowerTag.trim() === 'ds') {
+        return "Data Structures"
+    } else if (["other", "others", "misc", "special"].includes(lowerTag.trim())) {
         return "Ad-hoc"
     }
 
