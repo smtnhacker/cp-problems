@@ -4,17 +4,15 @@ import { selectAuth } from "../features/auth/authSlice"
 import userModel from "../model/UserModel"
 import CFModel from "../model/CFModel"
 import ListModel from "../model/ListModel"
-import { EntryHeader } from "../features/types/list"
 import { selectList } from "../features/list/listSlice"
+import { getSlugs } from "../components/Dashboard/Dashboard"
 
 const ProfilePage = () => {
     const { id: authorID } = useAppSelector(selectAuth)
     const [dName, setDName] = useState<string>('')
     const [cf, setCF] = useState<string>('')
     const list = useAppSelector(selectList)
-    const existingSlugs = useMemo<{[slug: string]: boolean}>(() => list.reduce((total, cur): {[slug: string]: boolean} => {
-        return { ...total, [cur.slug]: true }
-    }, {}), [list])
+    const existingSlugs = useMemo<{[slug: string]: boolean}>(() => getSlugs(list), [list])
 
     useEffect(() => {
         const getDetails = async () => {
