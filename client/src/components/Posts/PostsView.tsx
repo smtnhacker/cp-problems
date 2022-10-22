@@ -11,7 +11,7 @@ const convertToReadableDate = (date: string) => {
 
 const PostsView = () => {
     const posts = useAppSelector(selectPosts)
-    const sortedPosts = posts.slice(0, 15).sort((a, b) => {
+    const sortedPosts = posts.slice(0, 12).sort((a, b) => {
         const aDate = a.lastModified ?? a.createdAt
         const bDate = b.lastModified ?? b.createdAt
         return bDate < aDate ? -1 : 1
