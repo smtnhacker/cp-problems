@@ -1,8 +1,11 @@
 import { useEffect, useState, useMemo } from 'react'
-import { EntryHeader, Tag } from '../../features/types/list'
+
+import { EntryHeader, EntryItem, Tag } from '../../features/types/list'
 import CFModel, { Problem } from '../../model/CFModel'
 import getBestSuggestionProbs from '../../util/getBestSuggestionProbs'
 import getBestTag from '../../util/getBestTag'
+import normalizeList from '../../util/normalizeList'
+import parseTags from '../../util/parseTags'
 import removeDuplicates from '../../util/removeDuplicates'
 import ProgressBar from './ProgressBar'
 
@@ -10,36 +13,22 @@ interface DashboardProps {
     list: EntryHeader[]
 }
 
-interface TagDifficulty {
+export interface TagDifficulty {
     tag: string,
     difficulty: number
 }
 
 interface DifficultyArray extends Array<number>{}
 
-interface TagDiffListType {
+export interface TagDiffListType {
     [tag: string]: DifficultyArray
 }
 
-interface TagScore {
+export interface TagScore {
     [key: string]: number
 }
 
-const normalizeList = (list: Array<number>): number => {
-
-    const WEIGHTS = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.5]
-    const NEEDED = 7;
-    const TOTAL_WEIGHT = WEIGHTS.slice(0, NEEDED).reduce((total, cur) => total + cur, 0)
-
-    const sortedList = Array.from(list)
-    sortedList.sort((a, b) => b - a)
-    return sortedList.slice(0, NEEDED)
-            .reduce((total, cur, index) => {
-                return total + WEIGHTS[index] * cur / TOTAL_WEIGHT;
-            }, 0)
-}
-
-const normalizeTags = (list: TagDiffListType): TagScore => {
+export const normalizeTags = (list: TagDiffListType): TagScore => {
     let res: TagScore = {}
     Object.keys(list).forEach(tag => {
         res[tag] = normalizeList(list[tag])
@@ -47,67 +36,80 @@ const normalizeTags = (list: TagDiffListType): TagScore => {
     return res
 }
 
+export const getTagDifficultiesReducer = (total: TagDifficulty[], cur: EntryHeader): TagDifficulty[] => {
+    if (!cur.tags || cur.tags[0] === "") {
+        return total
+    }
+    const flattened: TagDifficulty[] = cur.tags.map((tag): TagDifficulty => (
+        { tag: tag, difficulty: cur.difficulty}
+    ))
+    return total.concat(flattened)
+}
+
+export const getTagsByDifficultyReducer = (total: TagDiffListType, cur: TagDifficulty): TagDiffListType => {
+    if (cur.tag in total) {
+        return { 
+            ...total, 
+            [cur.tag]: [...total[cur.tag], cur.difficulty] 
+        }
+    } else {
+        return { 
+            ...total, 
+            [cur.tag]: [cur.difficulty] 
+        }
+    }
+}
+
+export const ratingNormalization = (validTags: Tag[], ratings: TagScore): number => {
+    return Object.keys(ratings).reduce((total, cur) => {
+        if (!validTags.includes(cur)) {
+            return total
+        }
+        return Math.max(total, ratings[cur])
+    }, 0)
+}
+
+export const getSlugs = (list: EntryHeader[] | EntryItem[]): { [slug: string]: boolean } => {
+    return Array.from(list).reduce((total, cur): {[slug: string]: boolean} => {
+        return { ...total, [cur.slug]: true }
+    }, {})
+}
+
 const Dashboard = (props: DashboardProps) => {
     const [loading, setLoading] = useState(false);
-    const [tags, setTags] = useState<TagScore>({})
     const [suggests, setSuggests] = useState<Problem[]>([])
-    const existingSlugs = useMemo<{[slug: string]: boolean}>(() => props.list.reduce((total, cur): {[slug: string]: boolean} => {
-        return { ...total, [cur.slug]: true }
-    }, {}), [props.list])
+    const [tags, setTags] = useState<TagScore>({})
+    const existingSlugs = useMemo<{[slug: string]: boolean}>(() => getSlugs(props.list), [props.list])
 
     useEffect(() => {
         setLoading(true);
-        // console.log(props.list)
-        const tagDiffList: TagDifficulty[] = props.list.reduce((total: TagDifficulty[], cur: EntryHeader) => {
-            if (!cur.tags || cur.tags[0] === "") {
-                return total
-            }
-            const flattened: TagDifficulty[] = cur.tags.map((tag): TagDifficulty => (
-                { tag: tag, difficulty: cur.difficulty}
-            ))
-            return total.concat(flattened)
-        }, [])
-        const tagDiffSorted: TagDiffListType = tagDiffList.reduce((total: TagDiffListType, cur: TagDifficulty): TagDiffListType => {
-            if (cur.tag in total) {
-                return { ...total, [cur.tag]: [...total[cur.tag], cur.difficulty] }
-            } else {
-                return { ...total, [cur.tag]: [cur.difficulty] }
-            }
-        }, {})
+
+        const tagDiffList: TagDifficulty[] = props.list.reduce(getTagDifficultiesReducer, [])
+        const tagDiffSorted: TagDiffListType = tagDiffList.reduce(getTagsByDifficultyReducer, {})
         setTags(normalizeTags(tagDiffSorted))
+        
         setLoading(false);
-    }, [])
+    }, [props.list])
 
     const handleTagSubmit = async (e) => {
         e.preventDefault()
-        const suggestTags: Tag[] = removeDuplicates(
-                            e.target.suggest_tags.value.split(",")
-                            .map((tag: string) => tag.trim())
-                            .map((tag: string) => getBestTag(tag))
-                            .filter((tag: string) => tag.length > 0)
-                        )
 
+        const suggestTags: Tag[] = parseTags(e.target.suggest_tags.value)
         const { error, data } = await CFModel.fetchProblemsByTag(suggestTags)
+
         if (error) {
-            console.error(error)
-        } else {
-            const ratingLevel: number = Object.keys(tags).reduce((total, cur) => {
-                if (!suggestTags.includes(cur)) {
-                    return total
-                }
-                return Math.max(total, tags[cur])
-            }, 0)
-            console.log("Score:", ratingLevel)
-            const allSuggests = getBestSuggestionProbs(data, ratingLevel)
-            const noDuplicates = allSuggests.filter(prob => !(prob.slug in existingSlugs))
-            const sorted = noDuplicates.slice().sort((a, b) => b.solvedCount - a.solvedCount)
-            // allSuggests.forEach(prob => {
-            //     if (prob.slug in existingSlugs) {
-            //         console.log("EXISTING:", prob.slug)
-            //     }
-            // })
-            setSuggests(sorted)
-        }
+            return console.error(error)
+        } 
+
+        const ratingLevel = ratingNormalization(suggestTags, tags)
+        const allSuggests = getBestSuggestionProbs(data, ratingLevel)
+
+        const shownSuggestions = allSuggests
+                                    .filter(prob => !(prob.slug in existingSlugs))
+                                    .sort((a, b) => b.solvedCount - a.solvedCount)
+                                    .slice(0, 10)
+
+        setSuggests(shownSuggestions)
     }
 
     return (
@@ -140,7 +142,7 @@ const Dashboard = (props: DashboardProps) => {
                     </div>
                 </form>
                 <ul className='list-group'>
-                    {suggests.slice(0,10).map(prob => (
+                    {suggests.map(prob => (
                         <li key={prob.slug} className="list-group-item">
                             <a href={prob.url ?? "#"} target="_blank" rel="noreferrer noopener" className="nav-link">
                                 <strong>{prob.slug}</strong> {prob.name} <span className='text-muted'>({prob.rating} / {prob.solvedCount})</span>
