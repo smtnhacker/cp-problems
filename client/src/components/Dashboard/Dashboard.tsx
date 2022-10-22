@@ -3,10 +3,8 @@ import { useEffect, useState, useMemo } from 'react'
 import { EntryHeader, EntryItem, Tag } from '../../features/types/list'
 import CFModel, { Problem } from '../../model/CFModel'
 import getBestSuggestionProbs from '../../util/getBestSuggestionProbs'
-import getBestTag from '../../util/getBestTag'
 import normalizeList from '../../util/normalizeList'
 import parseTags from '../../util/parseTags'
-import removeDuplicates from '../../util/removeDuplicates'
 import ProgressBar from './ProgressBar'
 
 interface DashboardProps {
