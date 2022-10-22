@@ -4,9 +4,18 @@ import { useAppSelector } from "../../app/hooks"
 import { selectPosts } from "../../features/list/listSlice"
 import UserModel from '../../model/UserModel'
 
+const convertToReadableDate = (date: string) => {
+    const dateObj = new Date(date);
+    return dateObj.toLocaleString()
+}
+
 const PostsView = () => {
     const posts = useAppSelector(selectPosts)
-    const sortedPosts = posts.slice().sort((a, b) => a.lastModified < b.lastModified ? -1 : 1)
+    const sortedPosts = posts.slice(0, 15).sort((a, b) => {
+        const aDate = a.lastModified ?? a.createdAt
+        const bDate = b.lastModified ?? b.createdAt
+        return bDate < aDate ? -1 : 1
+    })
     const [authorCache, setAuthorCache] = useState({})
 
     const getAuthorHandle = (authorID: string) => {
@@ -29,13 +38,14 @@ const PostsView = () => {
 
     return (
        <>
-            <h3>Recent Submissions</h3>
+            <h3>Recent Activities</h3>
             <ul className="list-group">
             {sortedPosts.map(entry => {
                 return (
                 <li className="list-group-item" key={entry.id}>
                     <Link className="nav-link" to={`/posts/${entry.id || '404'}`}>
                         {entry.title} by {authorCache[entry.authorID]}
+                        <span className="text-muted"> {convertToReadableDate(entry.lastModified ?? entry.createdAt)}</span>
                     </Link>
                 </li>
                 )
