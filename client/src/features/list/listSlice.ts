@@ -210,7 +210,6 @@ export const listSlice = createSlice({
 });
 
 export const uploadTagScores = (payload: TagScore): AppThunk =>(dispatch, getState) => {
-    console.log("UPLOADING", payload)
     dispatch(listSlice.actions.setTagScores(payload))
   };
 
