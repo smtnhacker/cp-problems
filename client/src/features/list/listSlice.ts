@@ -146,6 +146,19 @@ export const deleteDrafts = createAsyncThunk(
   }
 )
 
+export const deleteHeader = createAsyncThunk(
+  'list/deleteHeader',
+  async (entry: EntryHeader) => {
+    try {
+      await model.deleteHeader(entry)
+      console.log("deleting header", entry)
+      return entry
+    } catch (err) {
+      console.log(err)
+    }
+  }
+)
+
 export const listSlice = createSlice({
   name: "list",
   initialState,
@@ -264,6 +277,9 @@ export const listSlice = createSlice({
         // @ts-ignore
         // forgot to add status to header
         state.value = state.value.filter(header => header.status !== 'draft')
+      })
+      .addCase(deleteHeader.fulfilled, (state, action) => {
+        state.value = state.value.filter(header => header.id !== action.payload.id)
       })
   }
 });

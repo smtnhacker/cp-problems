@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { selectAuth } from "../features/auth/authSlice";
 import ListForm from "../features/list/LisrForm";
-import { addItem } from "../features/list/listSlice";
+import { addItem, deleteHeader } from "../features/list/listSlice";
 import { EntryHeader, EntryItem } from "../features/types/list";
 import ListModel from "../model/ListModel";
 import getBestTag from "../util/getBestTag";
@@ -61,7 +61,8 @@ const NewProblemPage = (props: NewProblemPageProps) => {
         try {
             dispatch(addItem(newEntry));
             if (props.useCache) {
-                ListModel.deleteHeader(defaultValue)
+                // ListModel.deleteHeader(defaultValue)
+                dispatch(deleteHeader(defaultValue))
             }
             target.reset();
             navigate(`/problems/${newEntry.id}`)

@@ -9,7 +9,7 @@ import ListModel from '../../model/ListModel';
 import UserModel from '../../model/UserModel';
 import { selectAuth } from '../auth/authSlice';
 import { EntryHeader, EntryItem } from "../types/list";
-import { addHeader, deleteItem, selectList } from "./listSlice";
+import { addHeader, deleteHeader, deleteItem, selectList } from "./listSlice";
 
 import ListView from './ListView';
 
@@ -45,7 +45,8 @@ function List() {
     }, [])
 
   const handleDeleteHeader = async (entry: EntryHeader) => {
-    await ListModel.deleteHeader(entry)
+    // await ListModel.deleteHeader(entry)
+    dispatch(deleteHeader(entry))
     alert('deleted!')
   }
 
