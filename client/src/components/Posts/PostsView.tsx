@@ -35,6 +35,7 @@ const PostsView = () => {
 
     useEffect(() => {
         shown.forEach(entry => getAuthorHandle(entry.authorID))
+        console.log(shown)
     }, [])
 
     return (
@@ -43,7 +44,7 @@ const PostsView = () => {
             <ul className="list-group">
             {shown.map(entry => {
                 return (
-                <li className="list-group-item" key={entry.id}>
+                <li className="list-group-item" key={`${entry.id}-${entry.lastModified || entry.createdAt}`}>
                     <Link className="nav-link" to={`/posts/${entry.id || '404'}`}>
                         <strong>{entry.slug}</strong> {entry.title} by {authorCache[entry.authorID]}
                         <span className="text-muted"> {convertToReadableDate(entry.lastModified ?? entry.createdAt)}</span>
