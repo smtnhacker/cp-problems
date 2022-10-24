@@ -1,3 +1,4 @@
+import { sha512 } from "js-sha512";
 import { useEffect } from "react";
 import { Outlet } from "react-router"
 import { useAppDispatch, useAppSelector } from "../app/hooks";
@@ -22,12 +23,40 @@ const DataWrapper = () => {
     }
   }, [auth.loggedIn, auth.id, dispatch]);
 
-  useEffect(() => {
+  const getTagScores = () => {
+    console.warn("recomputing tag scores...")
     const tagDiffList = list.reduce(getTagDifficultiesReducer, [])
     const tagDiffSorted = tagDiffList.reduce(getTagsByDifficultyReducer, {})
     const tagScore = normalizeTags(tagDiffSorted)
     dispatch(uploadTagScores(tagScore))
-  }, [list, dispatch])
+    localStorage.setItem('cp-fave-tag-score', JSON.stringify({
+      key: sha512(auth.id),
+      tagScore: tagScore
+    }))
+  }
+
+  useEffect(() => {
+    if (auth.loggedIn) {
+      // check cache
+      try {
+        const cache = localStorage.getItem('cp-fave-tag-score')
+        const data = JSON.parse(cache)
+  
+        if (data.key === sha512(auth.id)) {
+          console.log("Got tagscore from cache")
+          dispatch(uploadTagScores(data.tagScore))
+        } else {
+          getTagScores()        
+        }
+      } catch (err) {
+        getTagScores()
+      }
+    }
+  }, [auth.loggedIn, auth.id, dispatch])
+
+  useEffect(() => {
+    getTagScores()
+  }, [list])
 
   if (status === 'loading') {
     return <div className="h1">Loading...</div>

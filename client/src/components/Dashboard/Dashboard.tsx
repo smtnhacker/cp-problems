@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 import { EntryHeader, EntryItem, Tag } from '../../features/types/list'
 import CFModel, { Problem } from '../../model/CFModel'
@@ -21,16 +21,27 @@ export const ratingNormalization = (validTags: Tag[], ratings: TagScore): number
     }, 0)
 }
 
-export const getSlugs = (list: EntryHeader[] | EntryItem[]): { [slug: string]: boolean } => {
-    return Array.from(list).reduce((total, cur): {[slug: string]: boolean} => {
-        return { ...total, [cur.slug]: true }
-    }, {})
+export const getSlugs = async (list: EntryHeader[] | EntryItem[]): Promise<{ [slug: string]: boolean }> => {
+    const res: { [slug: string]: boolean } = {}
+    Array.from(list).forEach(cur => {
+        res[cur.slug] = true
+    })
+    return Promise.resolve(res)
 }
 
 const Dashboard = (props: DashboardProps) => {
     const [suggests, setSuggests] = useState<Problem[]>([])
     const [suggestNotif, setSuggestNotif] = useState("")
-    const existingSlugs = useMemo<{[slug: string]: boolean}>(() => getSlugs(props.list), [props.list])
+    const [existingSlugs, setSlugs] = useState({})
+
+    useEffect(() => {
+        console.time("slugs")
+        getSlugs(props.list)
+            .then(res => {
+                setSlugs(res)
+                console.timeEnd("slugs")
+            })
+    }, [props.list])
 
     const handleTagSubmit = async (e) => {
         e.preventDefault()

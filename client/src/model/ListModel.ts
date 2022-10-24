@@ -4,6 +4,7 @@ import { API_ENDPOINT, HAS_FIREBASE } from "../config"
 import { db } from "../util/firebase";
 import { EntryItem, EntryHeader } from "../features/types/list"
 import { sha512 } from "js-sha512";
+import { retrieveFromCache, saveToCache } from "../util/cache";
 
 interface RawEntryHeader extends Omit<EntryHeader, 'difficulty'> {
     difficulty: string
@@ -34,6 +35,17 @@ export interface ModelPostReponse extends Omit<BaseModelResponse, 'data'> {
     data: EntryItem,
     errorCode?: number
 }
+
+export const genIsValidIdDate = (authorID: string) => (data: any): boolean => (
+    sha512(authorID) === data.key && (new Date()).toDateString() === data.savedAt
+)
+
+export const genIsValidDate = () => (data: any): boolean => (
+    (new Date()).toDateString() === data.savedAt
+)
+
+export const USER_ITEM_CACHE_KEY = 'cp-fave-user-items'
+export const USER_HEADER_CACHE_KEY = 'cp-fave-item-new-headers'
 
 class ListModel {
     private api: string;
@@ -102,15 +114,9 @@ class ListModel {
         type RawResponse = BaseObject<Omit<RawEntryHeader, 'lastModified' | 'authorID'>>
 
         // Check cache first to save bandwidth!
-        const cache = localStorage.getItem(`cp-fave-user-items`);
-        if (cache) {
-            try {
-                const data = JSON.parse(cache)
-                if ((new Date()).toDateString() === data.savedAt && sha512(authorID) === data.key) {
-                    return { error: null, data: data.data }
-                }
-
-            } catch (err) { }
+        const cacheData = retrieveFromCache(USER_ITEM_CACHE_KEY, genIsValidIdDate(authorID))
+        if (cacheData) {
+            return { error: null, data: cacheData.data }
         }
 
         if (HAS_FIREBASE) {
@@ -127,7 +133,7 @@ class ListModel {
                     key: sha512(authorID),
                     data: data
                 }
-                localStorage.setItem(`cp-fave-user-items`, JSON.stringify(toCache))
+                saveToCache(USER_ITEM_CACHE_KEY, toCache)
 
                 return { error: null, data: data };
             } catch (err) {
@@ -172,7 +178,7 @@ class ListModel {
         // ensure that the sync is used sparingly, use cache to enforce
         // hacker people, if you can read this, please don't delete the cache
 
-        const cache = localStorage.getItem('cp-fave-item-new-headers')
+        const cache = localStorage.getItem(USER_HEADER_CACHE_KEY)
         if (cache) {
             try {
                 const data = JSON.parse(cache)
@@ -199,26 +205,22 @@ class ListModel {
             set(userItemsRef, updatedHeaders);
 
             // update the cache limit
-            let syncLeft;
-            try {
-                const cache = JSON.parse(localStorage.getItem('cp-fave-item-new-headers'))
-                if ((new Date()).toDateString() === cache.savedAt) {
-                    syncLeft = cache.left - 1;
-                } else {
-                    syncLeft = 2;
-                }
-            } catch (err) {
+            let syncLeft: number;
+            const cacheData = retrieveFromCache(USER_HEADER_CACHE_KEY, genIsValidDate())
+            if (cacheData) {
+                syncLeft = cacheData.left - 1;
+            } else {
                 syncLeft = 2;
             }
 
             alert(`You have ${syncLeft} syncs left for today`)
-            localStorage.setItem('cp-fave-item-new-headers', JSON.stringify({
+            saveToCache(USER_HEADER_CACHE_KEY, {
                 savedAt: (new Date()).toDateString(),
                 left: syncLeft
-            }))
+            })
 
             // delete the user-items cache
-            localStorage.removeItem('cp-fave-user-items')
+            localStorage.removeItem(USER_ITEM_CACHE_KEY)
 
         }
     }
@@ -226,7 +228,7 @@ class ListModel {
     async deleteDrafts(authorID: string) {
 
         // delete cache
-        localStorage.removeItem('cp-fave-user-items')
+        localStorage.removeItem(USER_ITEM_CACHE_KEY)
 
         if (HAS_FIREBASE) {
             // get current headers
@@ -295,20 +297,18 @@ class ListModel {
             })
 
             // save to cache!
-
-            try {
-                const cache = JSON.parse(localStorage.getItem('cp-fave-user-items'))
-
-                if ((new Date()).toDateString() === cache.savedAt && sha512(authorID) === cache.key) {
-                    cache.data.push(newItem)
+            const cacheData = retrieveFromCache(USER_ITEM_CACHE_KEY, genIsValidIdDate(authorID))
+            if (cacheData) {
+                try {
+                    cacheData.data.push(newItem)
+                    saveToCache(USER_ITEM_CACHE_KEY, cacheData)
+                } catch (err) {
+                    console.error("Invalid cache. Deleting...")
+                    localStorage.removeItem(USER_ITEM_CACHE_KEY)
                 }
-
-                localStorage.setItem(`cp-fave-user-items`, JSON.stringify(cache))
-
-            } catch (err) {
+            } else {
                 console.warn("Do not delete cache")
             }
-
 
             return { error: null, data: newItem }
         } else {
@@ -338,13 +338,16 @@ class ListModel {
                     await remove(ref(db, `posts/${id}`))
                 
                 // delete from cache
-                try {
-                    const cache = JSON.parse(localStorage.getItem('cp-fave-user-items'))
-                    if ((new Date()).toDateString() === cache.savedAt && sha512(authorID) === cache.key) {
-                        cache.data = cache.data.filter(entry => entry.id !== id)
+                const cacheData = retrieveFromCache(USER_ITEM_CACHE_KEY, genIsValidIdDate(authorID))
+                if (cacheData) {
+                    try {
+                        cacheData.data = cacheData.data.filter(entry => entry.id !== id)
+                        saveToCache(USER_ITEM_CACHE_KEY, cacheData)
+                    } catch (err) {
+                        console.error("Invalid cache. Deleting...")
+                        localStorage.removeItem(USER_ITEM_CACHE_KEY)
                     }
-                    localStorage.setItem(`cp-fave-user-items`, JSON.stringify(cache))
-                } catch (err) {
+                } else {
                     console.warn("Do not delete the cache")
                 }
 
@@ -366,13 +369,16 @@ class ListModel {
                 await remove(itemRef)
 
                 // delete from cache
-                try {
-                    const cache = JSON.parse(localStorage.getItem('cp-fave-user-items'))
-                    if ((new Date()).toDateString() === cache.savedAt && sha512(authorID) === cache.key) {
-                        cache.data = cache.data.filter(entry => entry.id !== id)
+                const cacheData = retrieveFromCache(USER_ITEM_CACHE_KEY, genIsValidIdDate(authorID))
+                if (cacheData) {
+                    try {
+                        cacheData.data = cacheData.data.filter(entry => entry.id !== id)
+                        saveToCache(USER_ITEM_CACHE_KEY, cacheData)
+                    } catch (err) {
+                        console.error("Invalid cache. Deleting...")
+                        localStorage.removeItem(USER_ITEM_CACHE_KEY)
                     }
-                    localStorage.setItem(`cp-fave-user-items`, JSON.stringify(cache))
-                } catch (err) {
+                } else {
                     console.warn("Do not delete the cache")
                 }
 

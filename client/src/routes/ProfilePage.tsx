@@ -12,7 +12,7 @@ const ProfilePage = () => {
     const [dName, setDName] = useState<string>('')
     const [cf, setCF] = useState<string>('')
     const list = useAppSelector(selectList)
-    const existingSlugs = useMemo<{[slug: string]: boolean}>(() => getSlugs(list), [list])
+    const existingSlugs = useMemo(async () => await getSlugs(list), [list])
 
     useEffect(() => {
         const getDetails = async () => {

@@ -116,7 +116,7 @@ export const listSlice = createSlice({
     //   state.value = [action.payload, ...state.value]
     // },
     setTagScores: (state: ListState, action: PayloadAction<TagScore>) => {
-      state.tagScore = { ...action.payload }
+      state.tagScore = action.payload
     }
   },
   extraReducers: builder => {
@@ -200,7 +200,7 @@ export const listSlice = createSlice({
         }
         else {
           state.status = 'idle';
-          state.value = [...action.payload];
+          state.value = action.payload;
         }
       })
       .addCase(fetchUserItems.rejected, (state) => {

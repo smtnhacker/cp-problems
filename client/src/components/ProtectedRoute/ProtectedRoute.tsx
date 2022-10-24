@@ -12,16 +12,16 @@ const ProtectedRoute = (props: ProtectedRouteProps): JSX.Element => {
     const [isAllowed, setIsAllowed] = useState(false);
 
     useEffect(() => {
-        const retrieveCredentials = async () => {
-            const res = await props.getAuthentication()
+        const retrieveCredentials = () => {
+            const res = props.getAuthentication()
             setIsAllowed(res);
         }
         retrieveCredentials()
-            .then(() => setLoading(false));
+        setLoading(false)
     }, [])
 
     if (loading) {
-        return <div>Loading...</div>
+        return <div>Loading credentials...</div>
     }
 
     if (!isAllowed) {

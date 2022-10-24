@@ -5,7 +5,7 @@ import { cleanModule, getDB } from "firebase/database"
 import localStorageMock from "localstorage"
 
 import { EntryHeader, EntryItem } from "../features/types/list"
-import ListModel from "./ListModel"
+import ListModel, { USER_HEADER_CACHE_KEY, USER_ITEM_CACHE_KEY } from "./ListModel"
 
 jest.mock("js-sha512")
 jest.mock("firebase/database")
@@ -206,9 +206,9 @@ describe("List Model", () => {
 
         it("adds new item in cache", async () => {
             expect.assertions(1)
-            localStorage.setItem('cp-fave-user-items', JSON.stringify(sampleItemCache))
+            localStorage.setItem(USER_ITEM_CACHE_KEY, JSON.stringify(sampleItemCache))
             await ListModel.addItem(sampleItem)
-            const cache = JSON.parse(localStorage.getItem('cp-fave-user-items'))
+            const cache = JSON.parse(localStorage.getItem(USER_ITEM_CACHE_KEY))
             expect(cache).toStrictEqual({
                 ...sampleItemCache,
                 data: [sampleItem]
@@ -217,12 +217,12 @@ describe("List Model", () => {
 
         it("does not modify invalid author", async () => {
             expect.assertions(1)
-            localStorage.setItem('cp-fave-user-items', JSON.stringify({
+            localStorage.setItem(USER_ITEM_CACHE_KEY, JSON.stringify({
                 ...sampleItemCache,
                 key: "1"
             }))
             await ListModel.addItem(sampleItem)
-            const cache = JSON.parse(localStorage.getItem('cp-fave-user-items'))
+            const cache = JSON.parse(localStorage.getItem(USER_ITEM_CACHE_KEY))
             expect(cache).toStrictEqual({
                 ...sampleItemCache,
                 key: "1"
@@ -231,12 +231,12 @@ describe("List Model", () => {
 
         it("does not modify invalid date", async () => {
             expect.assertions(1)
-            localStorage.setItem('cp-fave-user-items', JSON.stringify({
+            localStorage.setItem(USER_ITEM_CACHE_KEY, JSON.stringify({
                 ...sampleItemCache,
                 savedAt: "fake"
             }))
             await ListModel.addItem(sampleItem)
-            const cache = JSON.parse(localStorage.getItem('cp-fave-user-items'))
+            const cache = JSON.parse(localStorage.getItem(USER_ITEM_CACHE_KEY))
             expect(cache).toStrictEqual({
                 ...sampleItemCache,
                 savedAt: "fake"
@@ -245,56 +245,56 @@ describe("List Model", () => {
 
         it("deletes cache on mass delete draft", async () => {
             expect.assertions(1)
-            localStorage.setItem('cp-fave-user-items', JSON.stringify(sampleItemCache))
+            localStorage.setItem(USER_ITEM_CACHE_KEY, JSON.stringify(sampleItemCache))
             await ListModel.deleteDrafts(AUTHOR_ID_MOCK)
             expect(localStorage.store).toStrictEqual({})
         })
 
         it("updates on mass header insertion", async () => {
             expect.assertions(1)
-            localStorage.setItem('cp-fave-item-new-headers', JSON.stringify(sampleHeaderCache))
-            localStorage.setItem('cp-fave-user-items', JSON.stringify(sampleItemCache))
+            localStorage.setItem(USER_HEADER_CACHE_KEY, JSON.stringify(sampleHeaderCache))
+            localStorage.setItem(USER_ITEM_CACHE_KEY, JSON.stringify(sampleItemCache))
             await ListModel.addHeaders([sampleHeader], AUTHOR_ID_MOCK)
             expect(localStorage.store).toStrictEqual({
-                'cp-fave-item-new-headers': JSON.stringify({ ...sampleHeaderCache, left: 2 })
+                [USER_HEADER_CACHE_KEY]: JSON.stringify({ ...sampleHeaderCache, left: 2 })
             })
         })
 
         it("does nothing on mass header insertion when out of tries", async () => {
             expect.assertions(1)
-            localStorage.setItem('cp-fave-item-new-headers', JSON.stringify({
+            localStorage.setItem(USER_HEADER_CACHE_KEY, JSON.stringify({
                 ...sampleHeaderCache,
                 left: 0
             }))
-            localStorage.setItem('cp-fave-user-items', JSON.stringify(sampleItemCache))
+            localStorage.setItem(USER_ITEM_CACHE_KEY, JSON.stringify(sampleItemCache))
             await ListModel.addHeaders([sampleHeader], AUTHOR_ID_MOCK)
             expect(localStorage.store).toStrictEqual({
-                'cp-fave-item-new-headers': JSON.stringify({ ...sampleHeaderCache, left: 0 }),
-                'cp-fave-user-items': JSON.stringify(sampleItemCache)
+                [USER_HEADER_CACHE_KEY]: JSON.stringify({ ...sampleHeaderCache, left: 0 }),
+                [USER_ITEM_CACHE_KEY]: JSON.stringify(sampleItemCache)
             })
         })
 
         it("deletes cache on item delete", async () => {
             expect.assertions(1)
-            localStorage.setItem('cp-fave-user-items', JSON.stringify({
+            localStorage.setItem(USER_ITEM_CACHE_KEY, JSON.stringify({
                 ...sampleItemCache,
                 data: [sampleItem]
             }))
             await ListModel.deleteItem(sampleItem)
             expect(localStorage.store).toStrictEqual({
-                'cp-fave-user-items': JSON.stringify(sampleItemCache)
+                [USER_ITEM_CACHE_KEY]: JSON.stringify(sampleItemCache)
             })
         })
 
         it("deletes cache on header delete", async () => {
             expect.assertions(1)
-            localStorage.setItem('cp-fave-user-items', JSON.stringify({
+            localStorage.setItem(USER_ITEM_CACHE_KEY, JSON.stringify({
                 ...sampleItemCache,
                 data: [sampleHeader]
             }))
             await ListModel.deleteHeader(sampleHeader)
             expect(localStorage.store).toStrictEqual({
-                'cp-fave-user-items': JSON.stringify(sampleItemCache)
+                [USER_ITEM_CACHE_KEY]: JSON.stringify(sampleItemCache)
             })
         })
     })

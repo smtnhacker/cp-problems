@@ -5,21 +5,21 @@ import {
 } from "./Dashboard"
 
 describe("get slugs function", () => {
-    it("does not crash", () => {
+    it("does not crash", async () => {
         expect.assertions(2)
-        expect(getSlugs([])).toBeDefined()
+        expect(await getSlugs([])).toBeDefined()
         // @ts-ignore
-        expect(getSlugs([{ slug: "waw" }])).toBeDefined()
+        expect(await getSlugs([{ slug: "waw" }])).toBeDefined()
     })
 
-    it("extracts the slugs properly", () => {
+    it("extracts the slugs properly", async () => {
         const list = [
             { slug: "1" },
             { slug: "2" },
             { slug: "3" },
             { slug: "four" }
         ] as EntryHeader[]
-        expect(getSlugs(list)).toStrictEqual({
+        expect(await getSlugs(list)).toStrictEqual({
             "1": true, "2": true, "3": true, "four": true
         })
     })
