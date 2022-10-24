@@ -35,11 +35,11 @@ const Dashboard = (props: DashboardProps) => {
     const [existingSlugs, setSlugs] = useState({})
 
     useEffect(() => {
-        console.time("slugs")
+        // console.time("slugs")
         getSlugs(props.list)
             .then(res => {
                 setSlugs(res)
-                console.timeEnd("slugs")
+                // console.timeEnd("slugs")
             })
     }, [props.list])
 

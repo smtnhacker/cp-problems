@@ -254,7 +254,7 @@ class CFModel {
                 })
             }
 
-            console.table(data.slice(0, 15))
+            // console.table(data.slice(0, 15))
             return { error: null, data: data }
 
         } catch (err) {

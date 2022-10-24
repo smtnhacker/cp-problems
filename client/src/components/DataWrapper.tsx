@@ -24,7 +24,7 @@ const DataWrapper = () => {
   }, [auth.loggedIn, auth.id, dispatch]);
 
   const getTagScores = () => {
-    console.warn("recomputing tag scores...")
+    // console.warn("recomputing tag scores...")
     const tagDiffList = list.reduce(getTagDifficultiesReducer, [])
     const tagDiffSorted = tagDiffList.reduce(getTagsByDifficultyReducer, {})
     const tagScore = normalizeTags(tagDiffSorted)
@@ -43,7 +43,7 @@ const DataWrapper = () => {
         const data = JSON.parse(cache)
   
         if (data.key === sha512(auth.id)) {
-          console.log("Got tagscore from cache")
+          // console.log("Got tagscore from cache")
           dispatch(uploadTagScores(data.tagScore))
         } else {
           getTagScores()        

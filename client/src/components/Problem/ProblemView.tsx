@@ -28,7 +28,7 @@ const ProblemView = (props: ProblemViewProps) => {
         const getCurrent = async () => {
             try {
                 const data = await getPost(problemID);
-                console.log("Got entry item:", data)
+                // console.log("Got entry item:", data)
                 setCurrentEntry(data);
             } catch (err) {
                 console.log(err)

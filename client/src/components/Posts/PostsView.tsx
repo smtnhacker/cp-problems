@@ -35,7 +35,7 @@ const PostsView = () => {
 
     useEffect(() => {
         shown.forEach(entry => getAuthorHandle(entry.authorID))
-        console.log(shown)
+        // console.log(shown)
     }, [])
 
     return (
