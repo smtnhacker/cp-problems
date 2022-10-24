@@ -74,7 +74,7 @@ const ListForm = (props: ListFormProps) => {
               }, "") ?? ""} 
             />
           </div>
-          <div className="form-text">This will be compared to CodeForces standard tags and modified accordingly</div>
+          <div className="form-text">Separate tags with comma. This will be compared to CodeForces standard tags and modified accordingly</div>
         </div>
         <input className="btn btn-primary" type="submit" value="Submit" />
       </form>

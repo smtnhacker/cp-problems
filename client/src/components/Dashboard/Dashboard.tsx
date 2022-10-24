@@ -103,7 +103,7 @@ const Dashboard = (props: DashboardProps) => {
                         <label htmlFor="suggest_tags" className="input-group-text">Tags</label>
                         <input type="text" name="suggest_tags" className="form-control" />
                         <input type="submit" value="Give me problems" className="btn btn-primary" />
-                        <div className="form-text">This will be compared to CodeForces standard tags and modified accordingly</div>
+                        <div className="form-text">Separate tags with comma. This will be compared to CodeForces standard tags and modified accordingly</div>
                     </div>
                 </form>
                 <ul className='list-group'>

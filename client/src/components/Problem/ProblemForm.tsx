@@ -135,7 +135,7 @@ const ProblemForm = (props: ProblemFormProps) => {
                 onChange={e => setTags(e.target.value)} 
               />
             </div>
-            <div className="form-text">This will be compared to CodeForces standard tags and modified accordingly</div>
+            <div className="form-text">Separate tags with comma. This will be compared to CodeForces standard tags and modified accordingly</div>
           </div> 
           <div className="input-group mb-3">
             <label className="input-group-text" hidden htmlFor="description">
