@@ -69,6 +69,10 @@ const initialDB = {
 
 describe("List Model", () => {
 
+    beforeEach(() => {
+        localStorage.clear()
+    })
+
     afterEach(() => {
         cleanModule(initialDB)
     })
@@ -91,6 +95,16 @@ describe("List Model", () => {
         })
     })
 
+    it("returns new headers in an array form", async () => {
+        expect.assertions(1)
+        const newHeaders = [{ id: "1" }]
+        // @ts-ignore
+        const { data } = await ListModel.addHeaders(newHeaders, AUTHOR_ID_MOCK)
+        expect(data).toStrictEqual([
+            { id: "1", authorID: AUTHOR_ID_MOCK }
+        ])
+    })
+
     it("add headers to the right person", async () => {
         expect.assertions(1)
         const newHeaders = [{ id: "1" }]
@@ -104,7 +118,20 @@ describe("List Model", () => {
         })
     })
 
-    it("deletes drafts properly", async () => {
+    it("add single headers properly", async () => {
+        expect.assertions(1)
+        const newHeader = { id: "1" }
+        // @ts-ignore
+        await ListModel.addHeader(newHeader, AUTHOR_ID_MOCK)
+        expect(getDB()).toStrictEqual({
+            ...initialDB,
+            user: { Sample: { ...initialDB.user.Sample, posts: {
+                1: { id: "1" }
+            }}}
+        })
+    })
+
+    it("mass deletes drafts properly", async () => {
         expect.assertions(3)
         const newHeaders = [
             { id: "1", status: "draft" },
@@ -160,6 +187,45 @@ describe("List Model", () => {
         })
     })
 
+    it("deletes single items properly", async () => {
+        expect.assertions(1)
+        cleanModule({
+            ...initialDB, 
+            user: {
+                [AUTHOR_ID_MOCK]: {
+                    ...initialDB.user[AUTHOR_ID_MOCK],
+                    posts: {
+                        1: { id: "1" }    
+                    } 
+                }
+            },
+            posts: {
+                1: { id: "1" }
+            }
+        })
+        // @ts-ignore
+        await ListModel.deleteItem({ id: "1", authorID: AUTHOR_ID_MOCK })
+        expect(getDB()).toStrictEqual(initialDB)
+    })
+
+    it("deletes single headers properly", async () => {
+        expect.assertions(1)
+        cleanModule({
+            ...initialDB,
+            user: {
+                [AUTHOR_ID_MOCK]: {
+                    ...initialDB.user[AUTHOR_ID_MOCK],
+                    posts: {
+                        1: { id: "1" }
+                    }
+                }
+            }
+        })
+        // @ts-ignore
+        await ListModel.deleteHeader({ id: "1", authorID: AUTHOR_ID_MOCK })
+        expect(getDB()).toStrictEqual(initialDB)
+    })
+
     it("uses pagination properly", async () => {
         expect.assertions(1)
         cleanModule({...initialDB, page_detail: {
@@ -186,10 +252,6 @@ describe("List Model", () => {
             left: 3
         }
 
-        beforeEach(() => {
-            localStorage.clear()
-        })
-
         it("localStorage does not crash", () => {
             expect.assertions(1)
             localStorage.setItem("test", "nothing")
@@ -211,7 +273,7 @@ describe("List Model", () => {
             const cache = JSON.parse(localStorage.getItem(USER_ITEM_CACHE_KEY))
             expect(cache).toStrictEqual({
                 ...sampleItemCache,
-                data: [sampleItem]
+                data: [sampleHeader]
             })
         })
 
