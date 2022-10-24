@@ -131,6 +131,70 @@ class CFModel {
         }
     }
 
+    async fetchRecentSubmissions(cfHandle: string, authorID: string): Promise<ModelSubmissionListResponse> {
+        const tagCache: { [tag: string]: Tag } = {}
+
+        try {
+            const response: Response = await fetch(
+                `https://codeforces.com/api/problemset.recentStatus?count=1000`)
+                
+            if (!response.ok) {
+                const { comment } = await response.json()
+                return { error: comment, data: null }
+            }
+            
+            const rawData: { status: string, result: CFSubmission[] } = await response.json()
+            if (rawData.status !== "OK") {
+                return { error: "something went wrong", data: null }
+            }
+            
+            const data: Array<EntryHeader & { status: string }>  = []
+            rawData.result.forEach(submission => {
+                
+                if (submission.author.members[0].handle !== cfHandle || submission.verdict !== "OK") {
+                    return;
+                }
+                
+                const newEntry: EntryHeader & { status: string } = {
+                    id: submission.id.toString(),
+                    authorID: authorID,
+                    difficulty: submission.problem.rating || 1900,
+                    slug: `CF${submission.contestId}${submission.problem.index}`,
+                    tags: submission.problem.tags.map(tag => {
+                        if (tag in tagCache) {
+                            return tagCache[tag]
+                        }
+                        const newTag = getBestTag(tag)
+                        tagCache[tag] = newTag
+                        return newTag
+                    }),
+                    title: submission.problem.name,
+                    status: "draft",
+                    tagOnly: true
+                }
+
+                data.push(newEntry)
+            })
+            
+            const noDuplicates: Array<EntryHeader & { status: string }> = []
+            const sortedData = data.sort((a, b) => {
+                return a.slug < b.slug ? -1 : 1
+            })
+            sortedData.forEach(cur => {
+                if (noDuplicates.length === 0 || noDuplicates[noDuplicates.length-1].slug !== cur.slug) {
+                    noDuplicates.push(cur)
+                }
+            })
+            
+            console.table(noDuplicates.slice(0,10))
+            return { error: null, data: noDuplicates }
+            
+
+        } catch (err) {
+            return { error: err, data: [] }
+        }
+    }
+
     async fetchProblemsByTag(tags: Tag[]): Promise<ModelProblemListResponse> {
         const convertToCF = (tag: Tag): string => {
             if (tag === 'DFS') {

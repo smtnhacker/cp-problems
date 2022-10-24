@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react"
-import { useAppSelector } from "../app/hooks"
+import { useAppDispatch, useAppSelector } from "../app/hooks"
 import { selectAuth } from "../features/auth/authSlice"
 import userModel from "../model/UserModel"
 import CFModel from "../model/CFModel"
 import ListModel from "../model/ListModel"
-import { selectList } from "../features/list/listSlice"
+import { addHeaders, deleteDrafts, selectList } from "../features/list/listSlice"
 import { getSlugs } from "../components/Dashboard/Dashboard"
 
 const ProfilePage = () => {
@@ -13,6 +13,7 @@ const ProfilePage = () => {
     const [cf, setCF] = useState<string>('')
     const list = useAppSelector(selectList)
     const existingSlugs = useMemo(async () => await getSlugs(list), [list])
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
         const getDetails = async () => {
@@ -52,13 +53,14 @@ const ProfilePage = () => {
             return !(entry.slug in existingSlugs)
         })
 
-        await ListModel.addHeaders(noDuplicates, authorID)
-        alert('Done! Please refresh the page to see changes in the dashboard')
+        // await ListModel.addHeaders(noDuplicates, authorID)
+        dispatch(addHeaders({newHeaders: noDuplicates, authorID: authorID}))
     }
 
     const handleDeleteDrafts = async () => {
-        await ListModel.deleteDrafts(authorID)
-        alert('Done! Please refresh the page to see changes in the dashboard')
+        // await ListModel.deleteDrafts(authorID)
+        dispatch(deleteDrafts(authorID))
+        alert('Done!')
     }
 
     return (

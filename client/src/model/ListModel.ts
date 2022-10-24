@@ -44,6 +44,12 @@ export const genIsValidDate = () => (data: any): boolean => (
     (new Date()).toDateString() === data.savedAt
 )
 
+export const convertHeadersToArray = (headers: BaseObject<EntryHeader>, authorID: string): Array<EntryHeader> => {
+    return Object.keys(headers).map(key => {
+                    return { ...headers[key], authorID: authorID}
+                })
+}
+
 export const USER_ITEM_CACHE_KEY = 'cp-fave-user-items'
 export const USER_HEADER_CACHE_KEY = 'cp-fave-item-new-headers'
 
@@ -173,7 +179,31 @@ class ListModel {
         }
     }
 
-    async addHeaders(newHeaders: EntryHeader[], authorID: string) {
+    async addHeader(newHeader: EntryHeader, authorID: string): Promise<BaseModelResponse> {
+        if (HAS_FIREBASE) {
+            // updated the user db
+            const userItemsRef = ref(db, `user/${authorID}/posts/${newHeader.id}`);
+            set(userItemsRef, newHeader);
+
+            // update cache
+            const cacheData = retrieveFromCache(USER_ITEM_CACHE_KEY, genIsValidIdDate(authorID))
+            if (cacheData) {
+                try {
+                    cacheData.data.push(newHeader)
+                    saveToCache(USER_ITEM_CACHE_KEY, cacheData)
+                } catch (err) {
+                    console.error("Invalid cache. Deleting...")
+                    localStorage.removeItem(USER_ITEM_CACHE_KEY)
+                }
+            } else {
+                console.warn("Do not delete cache")
+            }
+
+            return { error: null, data: null }
+        }
+    }
+
+    async addHeaders(newHeaders: EntryHeader[], authorID: string): Promise<ModelHeaderResponse> {
 
         // ensure that the sync is used sparingly, use cache to enforce
         // hacker people, if you can read this, please don't delete the cache
@@ -184,7 +214,7 @@ class ListModel {
                 const data = JSON.parse(cache)
                 if ((new Date()).toDateString() === data.savedAt && data.left <= 0) {
                     alert("No more syncing for today...")
-                    return { error: "too much syncing" }
+                    return { error: "too much syncing", data: null }
                 }
             } catch (err) { }
         }
@@ -192,7 +222,7 @@ class ListModel {
         if (HAS_FIREBASE) {
             // get current headers
             const userRef = ref(db, 'user');
-            const rawData = (await get(child(userRef, `${authorID}/posts`))).val() ?? {};
+            const rawData: BaseObject<EntryHeader> = (await get(child(userRef, `${authorID}/posts`))).val() ?? {};
             const newHeadersObj: { [id: string]: EntryHeader } = newHeaders.reduce((total, cur) => {
                 return {...total, [cur.id]: cur }
             }, {})
@@ -218,10 +248,11 @@ class ListModel {
                 savedAt: (new Date()).toDateString(),
                 left: syncLeft
             })
-
+            
             // delete the user-items cache
             localStorage.removeItem(USER_ITEM_CACHE_KEY)
 
+            return { error: null, data: convertHeadersToArray(updatedHeaders, authorID) } 
         }
     }
 
@@ -300,7 +331,7 @@ class ListModel {
             const cacheData = retrieveFromCache(USER_ITEM_CACHE_KEY, genIsValidIdDate(authorID))
             if (cacheData) {
                 try {
-                    cacheData.data.push(newItem)
+                    cacheData.data.push(entryHeader)
                     saveToCache(USER_ITEM_CACHE_KEY, cacheData)
                 } catch (err) {
                     console.error("Invalid cache. Deleting...")

@@ -12,11 +12,6 @@ const initialState: ListState = {
   status: 'idle'
 };
 
-const processData = (obj: any[]): any[] => {
-  return obj
-  // return Object.keys(obj).map((key: any): EntryItem => (obj[key] as EntryItem));
-}
-
 const getCurDate = (): string => {
   return (new Date()).toISOString()
 }
@@ -103,6 +98,50 @@ export const deleteItem = createAsyncThunk(
       return data;
     } catch (err: any) {
       console.log(err);
+    }
+  }
+)
+
+export const addHeaders = createAsyncThunk(
+  'list/addHeaders',
+  async (payload: { newHeaders: EntryHeader[], authorID: string }) => {
+    try {
+      const { data, error } = await model.addHeaders(payload.newHeaders, payload.authorID)
+      if (error) {
+        console.error(error)
+      } else {
+        return data 
+      }
+    } catch (err: any) {
+      console.log(err)
+    }
+  }
+)
+
+export const addHeader = createAsyncThunk(
+  'list/addHeader',
+  async (payload: { newHeader: EntryHeader, authorID: string }) => {
+    try {
+      const { error } = await model.addHeader(payload.newHeader, payload.authorID)
+      if (error) {
+        console.error(error)
+      } else {
+        return payload.newHeader
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
+)
+
+export const deleteDrafts = createAsyncThunk(
+  'list/deleteDrafts',
+  async (authorID: string) => {
+    try {
+      await model.deleteDrafts(authorID)
+      return authorID
+    } catch (err) {
+      console.log(err)
     }
   }
 )
@@ -205,6 +244,26 @@ export const listSlice = createSlice({
       })
       .addCase(fetchUserItems.rejected, (state) => {
         state.status = 'failed'
+      })
+      .addCase(addHeaders.fulfilled, (state, action) => {
+        if (action.payload === undefined) {
+          throw new Error("Data is missing")
+        }
+        else {
+          state.value = action.payload
+        }
+      })
+      .addCase(addHeader.fulfilled, (state, action) => {
+        if (action.payload === undefined) {
+          throw new Error("Data is missing")
+        } else {
+          state.value = [ action.payload, ...state.value ]
+        }
+      })
+      .addCase(deleteDrafts.fulfilled, (state) => {
+        // @ts-ignore
+        // forgot to add status to header
+        state.value = state.value.filter(header => header.status !== 'draft')
       })
   }
 });
