@@ -6,11 +6,11 @@
 
 A site that can be used to track competitive programming progress. Its primary use is to track skills and suggest problems depending on skill level.
 
-![Dashboard](link here)
+![Dashboard](https://raw.githubusercontent.com/smtnhacker/cp-problems/main/docs/assets/main.PNG)
 
 But, you can also share your insights regarding the problems you have solved! 
 
-![Blog](link here)
+![Blog](https://raw.githubusercontent.com/smtnhacker/cp-problems/main/docs/assets/blog.PNG)
 
 _Note: The blogging feature is currently in experimental stage so it is still very buggy._
 
